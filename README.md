@@ -40,6 +40,8 @@ gerar_json*.py                   Geradores de dados (comercial, notícias, trein
 seed*.py, migrar_fatia1_rh.py    Carga inicial e migrações pontuais
 monitor_dns.sh                   Monitor do DNS interno (roda no host TrueNAS)
 static/                          index.html (portal), licitacoes/, rh/, treinamentos/, frota/, monitoramento/
+apps/                            Apps independentes com código e deploy próprios (ver apps/README.md)
+  monitoramento/                 shift-guardian: plantão e relatório semanal do monitoramento (TanStack Start + Postgres)
 ```
 
 Ficam fora do repositório (ver `.gitignore`): `data/` (dados de RH, usuários, licitações, PDFs), `cloudflared`/`.cloudflared/`, backups (`*.bak`, `*.old*`) e os builds compilados de `static/frota/assets` e `static/monitoramento/assets`.
@@ -111,7 +113,8 @@ Fluxo do pregão: `triagem` → `aguardando_adriano` (validação) → `aguardan
 
 - Frota: veículo → dia, mais cadastros (membros, locais, classificações, cargos). Dados em `frota.json` e `frota_cadastros.json`.
 - Monitoramento: três eixos (`semanas`, `acervo`, cadastros), porque pontos de atenção atravessam semanas. Relatório semanal consulta o acervo por sobreposição de período.
-- As telas são apps compilados (Vite/React). **O código-fonte deles não está neste repositório**; só o `index.html` de cada um.
+- As telas em `static/frota` e `static/monitoramento` são builds compilados (Vite/React). **O código-fonte dessas telas antigas não está neste repositório**; só o `index.html` de cada uma.
+- O **novo app de monitoramento** (shift-guardian), que roda em Docker com banco próprio e foi desenhado para substituir o relatório semanal acima, tem o código-fonte em [`apps/monitoramento`](apps/monitoramento/LEIAME.md). A migração dos dados do app antigo usa `apps/monitoramento/deploy/legacy/import_monitoramento.py`.
 
 ## 7. Dados
 

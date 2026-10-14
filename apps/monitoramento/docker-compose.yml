@@ -1,0 +1,118 @@
+# Monitoramento Safenet — stack para intranet / TrueNAS.
+# Serviços: db (Postgres Supabase) → auth (GoTrue) → migrate (aplica o SQL) → rest (PostgREST) → app → gateway (nginx).
+# Uso: ./deploy/setup.sh && docker compose up -d --build
+
+name: safenet-monitoramento
+
+services:
+  db:
+    image: supabase/postgres:15.8.1.060
+    restart: unless-stopped
+    environment:
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?rode deploy/setup.sh para gerar o .env}
+      POSTGRES_DB: postgres
+    volumes:
+      - db-data:/var/lib/postgresql/data
+      - ./deploy/db/99-roles.sql:/docker-entrypoint-initdb.d/init-scripts/99-roles.sql:ro
+    healthcheck:
+      test: ["CMD", "pg_isready", "-U", "postgres", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 20s
+
+  auth:
+    image: public.ecr.aws/supabase/gotrue:v2.186.0
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      GOTRUE_API_HOST: 0.0.0.0
+      GOTRUE_API_PORT: "9999"
+      API_EXTERNAL_URL: ${SITE_URL}
+      GOTRUE_DB_DRIVER: postgres
+      GOTRUE_DB_DATABASE_URL: postgres://supabase_auth_admin:${POSTGRES_PASSWORD}@db:5432/postgres
+      GOTRUE_SITE_URL: ${SITE_URL}
+      GOTRUE_URI_ALLOW_LIST: ${SITE_URL}
+      GOTRUE_DISABLE_SIGNUP: "false"
+      GOTRUE_JWT_ADMIN_ROLES: service_role
+      GOTRUE_JWT_AUD: authenticated
+      GOTRUE_JWT_DEFAULT_GROUP_NAME: authenticated
+      GOTRUE_JWT_EXP: "3600"
+      GOTRUE_JWT_SECRET: ${JWT_SECRET}
+      GOTRUE_EXTERNAL_EMAIL_ENABLED: "true"
+      # Sem servidor de e-mail na intranet: o acesso é controlado pela aprovação do administrador.
+      GOTRUE_MAILER_AUTOCONFIRM: "true"
+      GOTRUE_EXTERNAL_PHONE_ENABLED: "false"
+      GOTRUE_PASSWORD_MIN_LENGTH: "6"
+    healthcheck:
+      test: ["CMD", "wget", "--no-verbose", "--tries=1", "--spider", "http://localhost:9999/health"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  migrate:
+    image: supabase/postgres:15.8.1.060
+    restart: "no"
+    depends_on:
+      auth:
+        condition: service_healthy
+    environment:
+      PGHOST: db
+      PGUSER: supabase_admin
+      PGDATABASE: postgres
+      PGPASSWORD: ${POSTGRES_PASSWORD}
+    volumes:
+      - ./drizzle/migrations:/migrations:ro
+      - ./deploy/db/post:/post:ro
+      - ./deploy/db/migrate.sh:/migrate.sh:ro
+    entrypoint: ["bash", "/migrate.sh"]
+
+  rest:
+    image: public.ecr.aws/supabase/postgrest:v12.2.12
+    restart: unless-stopped
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+    environment:
+      PGRST_DB_URI: postgres://authenticator:${POSTGRES_PASSWORD}@db:5432/postgres
+      PGRST_DB_SCHEMAS: public
+      PGRST_DB_ANON_ROLE: anon
+      PGRST_JWT_SECRET: ${JWT_SECRET}
+      PGRST_DB_USE_LEGACY_GUCS: "false"
+
+  app:
+    build: .
+    image: safenet-monitoramento-app:latest
+    restart: unless-stopped
+    depends_on:
+      rest:
+        condition: service_started
+    environment:
+      # Endereço INTERNO do gateway (porta 8080 não é publicada e libera /auth/v1/admin só para o app).
+      SUPABASE_URL: http://gateway:8080
+      SUPABASE_PUBLISHABLE_KEY: ${ANON_KEY}
+      SUPABASE_SERVICE_ROLE_KEY: ${SERVICE_ROLE_KEY}
+      TZ: America/Sao_Paulo
+
+  gateway:
+    image: nginx:1.27-alpine
+    restart: unless-stopped
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "${HTTP_PORT:-8080}:80"
+      - "${HTTPS_PORT:-8443}:443"
+    volumes:
+      - ./deploy/nginx/${NGINX_CONF:-nginx.http.conf}:/etc/nginx/templates/default.conf.template:ro
+      - ./deploy/nginx/common.inc:/etc/nginx/safenet-common.inc:ro
+      - ./deploy/certs:/etc/nginx/certs:ro
+    environment:
+      HTTPS_PORT: ${HTTPS_PORT:-8443}
+      ANON_KEY: ${ANON_KEY}
+
+volumes:
+  db-data:
