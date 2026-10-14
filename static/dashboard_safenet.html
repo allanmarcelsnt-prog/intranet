@@ -1,0 +1,826 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Safenet — Dashboard Comercial · 08/07/2026</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800;900&family=Lato:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Marca Safenet */
+    --verde:#7AC143; --verde-d:#5c9e2e; --laranja:#E8401C;
+    --magenta:#D41B6C; --ciano:#00B5E2; --ciano-d:#0090b8;
+    --preto:#111111; --cinza-escuro:#2D2D2D;
+    /* fundos escuros institucionais */
+    --dark:#0d2614; --navy:#0d2614; --deep:#061a2e;
+    /* aliases usados pelo layout (remapeados p/ a marca) */
+    --cyan:#00B5E2; --cyan-d:#0090b8;
+    --card:#F1F8EA; --line:#e3ecd9; --ink:#1a1a1a; --muted:#6B6B6B;
+    --tip-bg:#FDF4E6; --tip-ink:#9a5b12;
+    --green:#5c9e2e; --green-bg:#eef6e3; --amber:#c47a1a; --amber-bg:#FBF0DC;
+    --blue:#0090b8; --blue-bg:#e0f4fa; --gray:#7E8CA0; --gray-bg:#EEF1F6;
+    --red:#D41B6C; --red-bg:#fbe4ef;
+    --shadow:0 1px 2px rgba(13,38,20,.05),0 4px 16px rgba(13,38,20,.06);
+    --grad-marca:linear-gradient(90deg,var(--verde) 0%,var(--laranja) 33%,var(--magenta) 66%,var(--ciano) 100%);
+  }
+  *{box-sizing:border-box}
+  html{scroll-behavior:smooth}
+  body{margin:0;background:#f4f7f1;color:var(--ink);
+    font-family:'Lato',system-ui,sans-serif;font-size:14px;line-height:1.5;
+    -webkit-font-smoothing:antialiased}
+  h1,h2,h3,h4,h5,.brand,.kpi .big,.lic-kpi .n,.eyebrow,.toggle button{font-family:'Montserrat',system-ui,sans-serif}
+  .mono{font-family:'IBM Plex Mono',monospace;font-variant-numeric:tabular-nums}
+  .wrap{max-width:1180px;margin:0 auto;padding:0 20px}
+
+  /* header */
+  header{background:var(--dark);color:#fff;border-bottom:4px solid transparent;
+    border-image:var(--grad-marca) 1;position:sticky;top:0;z-index:50}
+  .hd{display:flex;align-items:center;gap:16px;padding:14px 0;flex-wrap:wrap}
+  .brand-logo{height:44px;width:auto;display:block;flex:none}
+  .brand{display:flex;flex-direction:column;line-height:1.05}
+  .brand .n{font-weight:900;font-size:22px;letter-spacing:.5px}
+  .brand .n b{color:var(--verde)}
+  .brand .s{font-size:9.5px;letter-spacing:3px;color:#a7c3ad;font-weight:700;margin-top:2px}
+  .hd .title{margin-left:6px;padding-left:18px;border-left:1px solid rgba(255,255,255,.15)}
+  .hd .title .t{font-weight:800;font-size:15px}
+  .hd .title .d{font-size:11px;color:#a7c3ad}
+  .toggle{margin-left:auto;display:flex;background:rgba(255,255,255,.08);border-radius:10px;padding:4px;gap:2px}
+  .toggle button{appearance:none;border:0;background:transparent;color:#cfe0d3;
+    font-family:'Montserrat',sans-serif;font-weight:700;font-size:12.5px;padding:8px 16px;border-radius:7px;cursor:pointer;transition:.15s}
+  .toggle button:hover{color:#fff}
+  .toggle button.active{background:var(--verde);color:#0d2614}
+  .toggle button:focus-visible{outline:2px solid #fff;outline-offset:2px}
+
+  main{padding:26px 0 60px}
+  .lead{font-size:12px;color:var(--muted);margin:0 0 20px}
+  .lead b{color:var(--navy)}
+
+  /* section shell */
+  section{margin:0 0 30px;scroll-margin-top:90px}
+  .sec-h{display:flex;align-items:baseline;gap:12px;margin:0 0 14px}
+  .sec-h h2{font-size:16px;font-weight:800;margin:0;letter-spacing:-.2px}
+  .sec-h .badge{font-size:11px;font-weight:600;color:var(--muted)}
+  .eyebrow{font-size:10px;letter-spacing:2.5px;font-weight:700;color:var(--cyan-d);text-transform:uppercase;margin:0 0 3px}
+
+  /* KPI cards */
+  .kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+  .kpi{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .kpi .lab{font-size:11px;color:var(--muted);font-weight:600}
+  .kpi .big{font-size:30px;font-weight:800;letter-spacing:-1px;margin:6px 0 2px;color:var(--navy)}
+  .kpi .sub{font-size:11px;color:var(--muted)}
+  .kpi.accent{background:linear-gradient(160deg,#0d2614,#164023);border-color:#0d2614;color:#fff}
+  .kpi.accent .big{color:var(--verde)!important}
+  .kpi.accent .lab,.kpi.accent .sub{color:#a7c3ad}
+  .kpi.accent .big{color:#fff}
+
+  /* meta bars */
+  .metas{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .meta{background:#fff;border:1px solid var(--line);border-radius:14px;padding:18px;box-shadow:var(--shadow)}
+  .meta h3{margin:0 0 12px;font-size:13.5px;font-weight:700}
+  .meta .row{display:flex;justify-content:space-between;font-size:12px;margin:3px 0;color:var(--muted)}
+  .meta .row b{color:var(--navy);font-weight:700}
+  .bar{height:11px;border-radius:6px;background:#e9eef4;overflow:hidden;margin:12px 0 10px}
+  .bar>span{display:block;height:100%;border-radius:6px}
+  .note{font-size:11.5px;color:var(--muted);background:var(--card);border-radius:8px;padding:9px 11px;border:1px solid var(--line)}
+  .note.warn{background:var(--tip-bg);border-color:#f3e2a8;color:var(--tip-ink)}
+
+  /* table */
+  .tbl{background:#fff;border:1px solid var(--line);border-radius:14px;overflow:hidden;box-shadow:var(--shadow)}
+  table{width:100%;border-collapse:collapse}
+  th{background:var(--dark);color:#fff;font-size:10.5px;letter-spacing:.4px;text-transform:uppercase;
+    font-weight:600;text-align:left;padding:11px 14px}
+  th.r,td.r{text-align:right}
+  th.c,td.c{text-align:center}
+  td{padding:11px 14px;border-top:1px solid #eef3f8;font-size:12.5px;vertical-align:middle}
+  tbody tr:hover{background:#f7fbff}
+  .op{font-weight:600;color:var(--navy)}
+  .op small{display:block;font-weight:400;color:var(--muted);font-size:11px;margin-top:2px}
+  tr.light-row .op{border-left:3px solid var(--verde);padding-left:8px;margin-left:-11px}
+
+  /* pills */
+  .pill{display:inline-block;font-size:10.5px;font-weight:700;padding:3px 9px;border-radius:20px;white-space:nowrap}
+  .st-ganho{color:var(--green);background:var(--green-bg)}
+  .st-enviada{color:var(--blue);background:var(--blue-bg)}
+  .st-andamento{color:var(--amber);background:var(--amber-bg)}
+  .st-negociacao{color:#D41B6C;background:#fbe4ef}
+  .st-prospeccao{color:var(--gray);background:var(--gray-bg)}
+  .st-perdido{color:var(--red);background:var(--red-bg)}
+  .st-aguardando{color:var(--blue);background:var(--blue-bg)}
+  .st-elaboracao{color:var(--amber);background:var(--amber-bg)}
+  .st-naoiniciado{color:var(--gray);background:var(--gray-bg)}
+  .st-emprego{color:#D41B6C;background:#fbe4ef}
+  .st-propostaenv{color:var(--blue);background:var(--blue-bg)}
+  .st-habilitado{color:var(--green);background:var(--green-bg)}
+  .st-naopart{color:var(--red);background:var(--red-bg)}
+  .prob{font-weight:700}
+
+  /* two-col cards */
+  .grid2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+  .grid3{display:grid;grid-template-columns:repeat(3,1fr);gap:14px}
+  .panel{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px;box-shadow:var(--shadow)}
+  .panel h3{margin:0 0 10px;font-size:13px;font-weight:700}
+  .li{display:flex;justify-content:space-between;gap:10px;padding:9px 0;border-top:1px solid #eef3f8;font-size:12.5px}
+  .li:first-of-type{border-top:0}
+  .li .l{color:var(--navy);font-weight:600}
+  .li .l small{display:block;color:var(--muted);font-weight:400;font-size:11px}
+  .li .v{white-space:nowrap;font-weight:700;color:var(--navy)}
+
+  /* light spotlight */
+  .light{background:linear-gradient(155deg,#0d2614,#0a3a1a);color:#fff;border-radius:16px;padding:22px;box-shadow:var(--shadow);border-top:4px solid transparent;border-image:var(--grad-marca) 1}
+  .light .eyebrow{color:var(--verde)}
+  .light h2{color:#fff}
+  .light .frentes{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:8px}
+  .light .col h4{margin:0 0 8px;font-size:12px;letter-spacing:1px;color:var(--verde);text-transform:uppercase}
+  .light .f{background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);border-radius:10px;padding:11px 13px;margin-bottom:9px}
+  .light .f .fn{font-weight:600;font-size:12.5px}
+  .light .f .fd{font-size:11px;color:#b5cdba;margin-top:2px}
+  .light .f .tag{font-size:9.5px;font-weight:700;text-transform:uppercase;letter-spacing:.5px;padding:2px 7px;border-radius:12px;background:rgba(122,193,67,.2);color:#a8dd7e;margin-left:6px}
+
+  /* licitações */
+  .lic-kpis{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+  .lic-kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:13px;text-align:center;box-shadow:var(--shadow)}
+  .lic-kpi .n{font-size:26px;font-weight:800;color:var(--navy)}
+  .lic-kpi .l{font-size:10.5px;color:var(--muted);font-weight:600;margin-top:2px}
+  .lic-kpi.hot{border-color:#f3d38a;background:var(--tip-bg)}
+  .lic-kpi.hot .n{color:var(--tip-ink)}
+
+  /* KPIs de valor (ganho / perdido / em andamento) */
+  .val-kpis{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:12px}
+  .val-kpi{background:#fff;border:1px solid var(--line);border-radius:12px;padding:14px 16px;
+    box-shadow:var(--shadow);border-left:4px solid var(--gray)}
+  .val-kpi .l{font-size:10.5px;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.5px}
+  .val-kpi .n{font-size:23px;font-weight:800;color:var(--navy);margin:4px 0 1px;letter-spacing:-.5px}
+  .val-kpi .s{font-size:10.5px;color:var(--muted)}
+  .val-kpi.vk-ganho{border-left-color:var(--verde)}
+  .val-kpi.vk-ganho .n{color:var(--green)}
+  .val-kpi.vk-perdido{border-left-color:var(--laranja)}
+  .val-kpi.vk-perdido .n{color:var(--laranja)}
+  .val-kpi.vk-andamento{border-left-color:var(--ciano)}
+  .val-kpi.vk-andamento .n{color:var(--ciano-d)}
+
+  /* aviso de cobertura de dados */
+  .cobertura{font-size:11.5px;color:var(--tip-ink);background:var(--tip-bg);
+    border:1px solid #f3e2a8;border-left:3px solid var(--amber);
+    border-radius:8px;padding:9px 11px;margin:0 0 14px}
+  .cobertura b{font-weight:700}
+
+  /* chips de filtro por status */
+  .chips{display:flex;flex-wrap:wrap;gap:7px;margin:0 0 12px;align-items:center}
+  .chips .cl{font-size:10.5px;color:var(--muted);font-weight:600;margin-right:2px}
+  .chip{font-family:'Lato',sans-serif;font-size:11.5px;font-weight:600;
+    padding:5px 11px;border-radius:20px;border:1px solid var(--line);
+    background:#fff;color:var(--muted);cursor:pointer;transition:.15s;
+    display:inline-flex;align-items:center;gap:6px;line-height:1.4}
+  .chip:hover{border-color:var(--verde);color:var(--navy)}
+  .chip:focus-visible{outline:2px solid var(--verde);outline-offset:2px}
+  .chip.on{background:var(--verde);border-color:var(--verde);color:#0d2614;font-weight:700}
+  .chip .q{background:rgba(0,0,0,.08);border-radius:20px;padding:0 6px;font-size:10px;
+    font-variant-numeric:tabular-nums}
+  .chip.on .q{background:rgba(255,255,255,.35)}
+  .chip.clear{border-style:dashed}
+  .tbl .vazio{padding:22px 14px;text-align:center;color:var(--muted);font-size:12px}
+
+  .only-lic-only{display:none}
+  body.lic-view .hide-in-lic{display:none !important}
+  body.lic-view .only-lic-only{display:block}
+  body.lic-view #licitacoes{scroll-margin-top:0}
+
+  /* ===== inteligência comercial (KPIs analíticos) ===== */
+  .intel{display:grid;grid-template-columns:repeat(2,1fr);gap:14px}
+  .intel .box{background:var(--card);border:1px solid var(--line);border-radius:14px;
+    padding:16px 18px;box-shadow:var(--shadow)}
+  .intel .box h4{margin:0 0 4px;font-size:13px;font-weight:800;color:var(--navy);
+    display:flex;align-items:center;gap:7px}
+  .intel .box .hint{font-size:11px;color:var(--muted);margin:0 0 12px}
+  /* barra de concentração */
+  .conc-bar{height:22px;border-radius:7px;background:var(--gray-bg);overflow:hidden;display:flex;margin:6px 0 8px}
+  .conc-bar .seg{height:100%;display:flex;align-items:center;justify-content:center;
+    font-size:10.5px;font-weight:800;color:#fff;white-space:nowrap;font-family:'IBM Plex Mono',monospace}
+  .conc-bar .seg.dom{background:linear-gradient(90deg,var(--laranja),var(--magenta))}
+  .conc-bar .seg.rest{background:linear-gradient(90deg,var(--verde),var(--verde-d))}
+  .conc-risco{font-size:11.5px;font-weight:700;padding:6px 10px;border-radius:8px;margin-top:2px;display:inline-block}
+  .conc-risco.alto{background:var(--red-bg);color:var(--red)}
+  .conc-risco.medio{background:var(--amber-bg);color:var(--amber)}
+  .conc-risco.ok{background:var(--green-bg);color:var(--green)}
+  /* meta projetada: barra em duas camadas */
+  .proj-bar{height:26px;border-radius:8px;background:var(--gray-bg);position:relative;overflow:hidden;margin:10px 0 6px}
+  .proj-bar .real{position:absolute;left:0;top:0;height:100%;background:linear-gradient(90deg,#E8401C,#D41B6C);z-index:2}
+  .proj-bar .proj{position:absolute;left:0;top:0;height:100%;background:repeating-linear-gradient(45deg,#f0b8a8,#f0b8a8 6px,#f6d0c5 6px,#f6d0c5 12px);z-index:1}
+  .proj-leg{display:flex;gap:16px;font-size:11px;color:var(--muted);flex-wrap:wrap}
+  .proj-leg b{color:var(--ink)}
+  .proj-leg .sw{display:inline-block;width:10px;height:10px;border-radius:3px;margin-right:5px;vertical-align:middle}
+  /* qualidade do dado */
+  .dq-num{font-family:'Montserrat',sans-serif;font-weight:900;font-size:30px;color:var(--amber);line-height:1}
+  .dq-row{display:flex;align-items:baseline;gap:10px;margin:2px 0 8px}
+  .dq-row .lab{font-size:12px;color:var(--muted)}
+  .intel .box.warn-box{border-color:#f0d8a8;background:var(--amber-bg)}
+  /* conversão por origem */
+  .conv-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid var(--line)}
+  .conv-row:last-child{border-bottom:0}
+  .conv-row .og{flex:none;width:82px;font-weight:800;font-size:12px}
+  .conv-track{flex:1;height:16px;border-radius:5px;background:var(--gray-bg);overflow:hidden;display:flex}
+  .conv-track .g{background:var(--green)}
+  .conv-track .p{background:var(--red)}
+  .conv-row .stat{flex:none;font-family:'IBM Plex Mono',monospace;font-size:11.5px;font-weight:600;color:var(--muted);width:96px;text-align:right}
+  .motivos{display:flex;flex-wrap:wrap;gap:6px;margin-top:10px}
+  .motivos .chip{background:var(--red-bg);color:var(--red);border-radius:20px;padding:3px 11px;font-size:11px;font-weight:700}
+  .motivos .chip b{font-weight:900}
+  .intel .amostra{font-size:10.5px;color:var(--muted);margin-top:10px;font-style:italic}
+
+  footer{border-top:1px solid var(--line);padding:20px 0;color:var(--muted);font-size:10.5px;letter-spacing:.6px;text-align:center}
+
+  @media(max-width:920px){
+    .kpis,.lic-kpis,.val-kpis{grid-template-columns:repeat(2,1fr)}
+    .metas,.grid2,.grid3,.light .frentes{grid-template-columns:1fr}
+    .hd .title{border-left:0;padding-left:0;margin-left:0;width:100%}
+    .toggle{margin-left:0;width:100%}
+    .toggle button{flex:1}
+    .hide-mobile{display:none}
+    table{font-size:11.5px}
+  }
+  @media(prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<header>
+  <div class="wrap hd">
+    <img class="brand-logo" src="data:image/png;base64,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" alt="Safenet Tecnologia" />
+    <div class="brand">
+      <div class="n">SAFE<b>NET</b></div>
+      <div class="s">TECNOLOGIA INTELIGENTE</div>
+    </div>
+    <div class="title">
+      <div class="t">Dashboard Comercial</div>
+      <div class="d">Planilha comercial v12 · 08/07/2026</div>
+    </div>
+    <div class="toggle" role="tablist" aria-label="Modo de visualização">
+      <button id="btn-geral" class="active" onclick="setView('geral')" role="tab" aria-selected="true">Visão geral</button>
+      <button id="btn-lic" onclick="setView('lic')" role="tab" aria-selected="false">Só licitações</button>
+    </div>
+  </div>
+</header>
+
+<main class="wrap">
+  <p class="lead hide-in-lic">Panorama para a reunião do comercial · <b>Adriano</b> · itens de pipeline, metas, conta Light e licitações. Use <b>“Só licitações”</b> no topo para focar apenas nos pregões.</p>
+  <p class="lead only-lic-only">Frente de <b>licitações públicas (via Reggra)</b> — 15 processos: 7 em pregão (aguardando sessão), 4 em elaboração, 3 não iniciados, 1 não participada. ⏱ Próximo limite de entrega: <b>Ladário 10/07 (sex)</b>. Regra: entregar 1 dia útil antes da abertura.</p>
+
+  <!-- KPIs -->
+  <section class="hide-in-lic">
+    <div class="kpis">
+      <div class="kpi"><div class="lab">Recorrente ativo/mês</div><div class="big mono" id="k-rec">—</div><div class="sub" id="k-rec-sub">carregando…</div></div>
+      <div class="kpi"><div class="lab">Meta recorrente</div><div class="big mono" id="k-meta">—</div><div class="sub" id="k-meta-sub">carregando…</div></div>
+      <div class="kpi accent"><div class="lab">Pipeline ativo</div><div class="big mono" id="k-pipe">—</div><div class="sub">oportunidades no funil</div></div>
+      <div class="kpi"><div class="lab">Obras contratadas</div><div class="big mono" id="k-obras">—</div><div class="sub" id="k-obras-sub">carregando…</div></div>
+      <div class="kpi"><div class="lab">Recorrente ponderado</div><div class="big mono" id="k-pond">—</div><div class="sub">potencial do pipeline/mês</div></div>
+    </div>
+  </section>
+
+  <!-- METAS -->
+  <section class="hide-in-lic">
+    <div class="metas">
+      <div class="meta">
+        <h3>💰 Meta 1 — Receita recorrente mensal</h3>
+        <div class="row"><span>Recorrente atual</span><b class="mono" id="m-rec">R$ 42.041/mês</b></div>
+        <div class="row"><span>Meta mensal</span><b class="mono">R$ 60.000/mês</b></div>
+        <div class="bar"><span id="m-rec-bar" style="width:70%;background:linear-gradient(90deg,#7AC143,#5c9e2e)"></span></div>
+        <div class="note">🟡 <b>70%</b> — Bauru (R$ 6.313/m, vencida) e Senac Câmara Fria (R$ 7.415/m, 98%) fecham a meta praticamente sozinhas ao serem contratadas.</div>
+      </div>
+      <div class="meta">
+        <h3>🏗️ Meta 2 — Faturamento de obras anual</h3>
+        <div class="row"><span>Faturado (ganho) 2026</span><b class="mono" id="m-obras">R$ 114.738</b></div>
+        <div class="row"><span>Meta anual</span><b class="mono">R$ 2.400.000</b></div>
+        <div class="bar"><span id="m-obras-bar" style="width:4.8%;background:linear-gradient(90deg,#E8401C,#D41B6C)"></span></div>
+        <div class="note warn" id="m-obras-nota">⚠️ O <b>Pacote CFTV Emergencial 2026</b> da Light é executado <b>obra a obra</b>: cada subestação aprovada entra como ganho e soma à meta. Já foram aprovadas <b>Marinha, Volta Redonda, Ramos, Ary Fontinelle e Cascadura</b> (+ Acesso Marechal). O restante do pacote segue em <b>“Em andamento”</b> e entra conforme for aprovado — não há um único “fechamento guarda-chuva” a contar de uma vez.</div>
+      </div>
+    </div>
+  </section>
+
+  <!-- INTELIGÊNCIA COMERCIAL (KPIs analíticos — Caminho A) -->
+  <section class="hide-in-lic" id="sec-intel" hidden>
+    <div class="sec-h"><h2>🧭 Inteligência comercial</h2><span class="badge">leitura de risco e projeção</span></div>
+    <div class="intel">
+      <!-- SUG 1 — concentração -->
+      <div class="box" id="box-conc">
+        <h4>⚠️ Concentração de cliente</h4>
+        <p class="hint">Quanto da receita recorrente depende de um único cliente.</p>
+        <div class="conc-bar" id="conc-bar"></div>
+        <span class="conc-risco" id="conc-risco">—</span>
+      </div>
+      <!-- SUG 2 — meta projetada -->
+      <div class="box" id="box-proj">
+        <h4>🏗️ Meta de obras — projetada</h4>
+        <p class="hint">Faturado + pipeline ponderado pela probabilidade de fechamento.</p>
+        <div class="proj-bar"><span class="proj" id="proj-proj"></span><span class="real" id="proj-real"></span></div>
+        <div class="proj-leg">
+          <span><span class="sw" style="background:linear-gradient(90deg,#E8401C,#D41B6C)"></span>Faturado <b id="proj-real-v">—</b></span>
+          <span><span class="sw" style="background:#f0b8a8"></span>Projetado <b id="proj-proj-v">—</b></span>
+        </div>
+      </div>
+      <!-- SUG 3 — qualidade do dado -->
+      <div class="box warn-box" id="box-dq">
+        <h4>🔎 Qualidade do dado do pipeline</h4>
+        <p class="hint">Oportunidades sem probabilidade não entram no ponderado — subestimam o potencial.</p>
+        <div class="dq-row"><span class="dq-num" id="dq-prob">—</span><span class="lab">oportunidades sem <b>probabilidade</b></span></div>
+        <p class="hint" id="dq-detalhe" style="margin:0"></p>
+      </div>
+      <!-- SUG 5 — conversão por origem -->
+      <div class="box" id="box-conv">
+        <h4>📈 Conversão por origem</h4>
+        <p class="hint">Ganhos × perdas nas propostas encerradas, por tipo de negócio.</p>
+        <div id="conv-lista"></div>
+        <div class="motivos" id="conv-motivos"></div>
+        <p class="amostra" id="conv-amostra"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIGHT SPOTLIGHT -->
+  <section class="hide-in-lic">
+    <div class="light">
+      <p class="eyebrow">Conta em expansão</p>
+      <h2>⚡ Light — de “pacote de obras” a conta multi-frente</h2>
+      <div class="frentes">
+        <div class="col">
+          <h4>🔐 Setor Segurança</h4>
+          <div class="f"><div class="fn">Pacote CFTV Emergencial 2026 <span class="tag">R$ 2,58M verba</span></div><div class="fd">23 obras priorizadas por furtos em subestações. 1 aprovada (Marinha), 14 enviadas, 8 em andamento.</div></div>
+          <div class="f"><div class="fn">2 Almoxarifados <span class="tag">novo</span></div><div class="fd">Visita técnica feita (Leonardo). Projeto a elaborar.</div></div>
+          <div class="f"><div class="fn">Agências remotas — nuvem Hikvision <span class="tag">novo</span></div><div class="fd">Em análise pela Seg. da Informação (integração Hikvision × Azure AD).</div></div>
+          <div class="f"><div class="fn">Sala de Monitoramento — Sede Marechal <span class="tag">novo</span></div><div class="fd">Rodrigo desenhando o projeto.</div></div>
+        </div>
+        <div class="col">
+          <h4>⚙️ Setor Operacional (via Nextra)</h4>
+          <div class="f"><div class="fn">SE Sapucaia — PoC câmera térmica <span class="tag">Nextra</span></div><div class="fd">Câmera cedida pela Nextra p/ chaves seccionadoras. Reunião c/ Sidnei 09/07 10h.</div></div>
+          <div class="f"><div class="fn">SE Integração — projeto completo <span class="tag">pedido direto</span></div><div class="fd">Safenet monitora as chaves seccionadoras. Visita 06/07.</div></div>
+          <h4 style="margin-top:14px">✅ Já ativo</h4>
+          <div class="f"><div class="fn">Contrato de manutenção — 1 equipe</div><div class="fd">R$ 35.180/mês · 24 meses (out/25–out/27).</div></div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- PIPELINE -->
+  <section class="hide-in-lic">
+    <div class="sec-h"><h2>📋 Pipeline completo</h2><span class="badge" id="pipe-count">21 oportunidades</span></div>
+    <div class="chips" id="chips-pipe"></div>
+    <div class="tbl">
+      <table>
+        <thead><tr><th>Oportunidade / contato</th><th class="r">Valor obra</th><th class="c">Estágio</th><th class="c">Prob.</th></tr></thead>
+        <tbody id="pipe-body"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- FUNIL + CONTRATOS -->
+  <section class="hide-in-lic">
+    <div class="grid2">
+      <div class="panel">
+        <h3>📊 Resumo do funil</h3>
+        <div id="funil"></div>
+      </div>
+      <div class="panel">
+        <h3>✅ Contratos ativos</h3>
+        <div id="contratos"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===================== LICITAÇÕES (sempre visível) ===================== -->
+  <section id="licitacoes">
+    <p class="eyebrow">Frente pública · Reggra</p>
+    <div class="sec-h"><h2>🏛️ Licitações</h2><span class="badge">pregões e TP · via Reggra</span></div>
+
+    <div class="lic-kpis">
+      <div class="lic-kpi"><div class="n" id="lk-total">—</div><div class="l">Processos ativos</div></div>
+      <div class="lic-kpi"><div class="n" id="lk-pregao">—</div><div class="l">Em pregão (sessão)</div></div>
+      <div class="lic-kpi"><div class="n" id="lk-elab">—</div><div class="l">Em elaboração</div></div>
+      <div class="lic-kpi hot"><div class="n" id="lk-naoini">—</div><div class="l">Não iniciado ⚠️</div></div>
+      <div class="lic-kpi"><div class="n" id="lk-enviada">—</div><div class="l">Proposta enviada</div></div>
+    </div>
+
+    <!-- Valores por resultado. Ganho/perdido vêm do HISTÓRICO (ORIGEM=Licitação);
+         em andamento soma a aba LICITAÇÕES. Não reagem ao filtro abaixo. -->
+    <div class="val-kpis">
+      <div class="val-kpi vk-ganho">
+        <div class="l">Valor ganho</div>
+        <div class="n mono" id="vk-ganho">—</div>
+        <div class="s" id="vk-ganho-sub">—</div>
+      </div>
+      <div class="val-kpi vk-perdido">
+        <div class="l">Valor perdido</div>
+        <div class="n mono" id="vk-perdido">—</div>
+        <div class="s" id="vk-perdido-sub">—</div>
+      </div>
+      <div class="val-kpi vk-andamento">
+        <div class="l">Valor em andamento</div>
+        <div class="n mono" id="vk-andamento">—</div>
+        <div class="s" id="vk-andamento-sub">—</div>
+      </div>
+    </div>
+    <p class="cobertura" id="vk-cobertura" hidden></p>
+
+    <div class="chips" id="chips-lic"></div>
+
+    <div class="tbl">
+      <table>
+        <thead><tr>
+          <th class="c hide-mobile">#</th><th>Órgão</th><th class="c hide-mobile">Edital</th>
+          <th class="c">Abertura</th><th class="c">Limite</th><th class="c hide-mobile">Executor</th>
+          <th class="r hide-mobile">Valor est.</th><th class="c">Status</th>
+        </tr></thead>
+        <tbody id="lic-body"></tbody>
+      </table>
+    </div>
+    <p class="note" style="margin-top:12px">Regra do funil: pregão <b>vencido/habilitado</b> vira oportunidade no pipeline. A <b>Prefeitura de Bauru</b> já migrou (ganha). Objeto/escopo e valor estimado ficam a preencher conforme os editais; resultados em pregão entram assim que o setor de licitação informar. Limite de entrega = 1 dia útil antes da abertura.<br><b>Nota contábil:</b> a Bauru (R$ 6.313/m) aparece tanto em <b>Contratos ativos</b> quanto no <b>Histórico</b> (ganho de licitação, R$ 151.512 = 24×6.313). É o mesmo negócio em duas visões — não somar as duas para não contar em dobro.</p>
+  </section>
+
+  <!-- PROSPECÇÃO + HISTÓRICO -->
+  <section class="hide-in-lic">
+    <div class="grid2">
+      <div class="panel">
+        <h3>🎯 Prospecção e novos leads</h3>
+        <div id="prospec"></div>
+      </div>
+      <div class="panel">
+        <h3>🗂️ Encerrados recentemente</h3>
+        <div id="historico"></div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>SAFENET TECNOLOGIA · DASHBOARD COMERCIAL PARA COORDENADORES · 08/07/2026 · PLANILHA COMERCIAL v12 · CONFIDENCIAL</footer>
+
+<script>
+let pipeline = [
+  {n:"Prefeitura Bauru (SCA)", c:"Licitação/Reggra · pregão vencido · em habilitação · rec R$ 6.313/m", v:"—", s:"ganho", sl:"Ganho ✅", p:100},
+  {n:"Light Segurança — SE Marinha", c:"Allison · obra aprovada (pacote CFTV)", v:"R$ 114.738", s:"ganho", sl:"Ganho ✅", p:100, light:1},
+  {n:"Light Segurança — SE Volta Redonda", c:"Allison · obra aprovada (pacote CFTV)", v:"R$ 199.187", s:"ganho", sl:"Ganho ✅", p:100, light:1},
+  {n:"Light Segurança — SE Ramos", c:"Allison · obra aprovada (pacote CFTV)", v:"R$ 87.401", s:"ganho", sl:"Ganho ✅", p:100, light:1},
+  {n:"Light Segurança — SE Ary Fontinelle", c:"Allison · obra aprovada (pacote CFTV)", v:"R$ 90.625", s:"ganho", sl:"Ganho ✅", p:100, light:1},
+  {n:"Light Segurança — SE Cascadura", c:"Allison · obra aprovada (pacote CFTV)", v:"R$ 174.471", s:"ganho", sl:"Ganho ✅", p:100, light:1},
+  {n:"Light — Acesso Av. Marechal Floriano", c:"CFTV + SCA · Sede Marechal", v:"R$ 12.402", s:"ganho", sl:"Ganho ✅", p:100, light:1},
+  {n:"Senac — Câmara Fria", c:"Dispensa · em avaliação técnica Senac · rec R$ 7.415/m", v:"R$ 88.987", s:"enviada", sl:"Enviada", p:98},
+  {n:"OEC — Renovação de Licenças", c:"Batista · proposta enviada", v:"—", s:"enviada", sl:"Enviada", p:75},
+  {n:"Senac Downtown/CEAG", c:"Elaine · aditivo futuro c/ controle de acesso", v:"—", s:"prospeccao", sl:"Prospecção", p:64},
+  {n:"Creche — Unid. 1", c:"Darci · negociação c/ Rodrigo · rec R$ 561/m", v:"R$ 14.898", s:"negociacao", sl:"Negociação", p:60},
+  {n:"Light Segurança — Pacote CFTV 2026", c:"Allison · verba R$ 2,58M · 23 obras (furtos)", v:"R$ 2.404.548", s:"andamento", sl:"Em andamento", p:null, light:1},
+  {n:"Ed. Catete — Projeto Integrado", c:"Junior · Segware + monit. + encomendas + portaria remota", v:"a definir", s:"andamento", sl:"Em andamento", p:50},
+  {n:"OEC — Equipe de Manutenção", c:"Batista · SLA recebido · Rodrigo elabora proposta", v:"—", s:"andamento", sl:"Em andamento", p:50},
+  {n:"Parque Jardim de Alah", c:"Séllos Eng. · instalações provisórias · aguarda contato Adriano", v:"—", s:"enviada", sl:"Enviada", p:50},
+  {n:"Light Segurança — 2 Almoxarifados", c:"Segurança Light · visita feita (Leonardo)", v:"a definir", s:"andamento", sl:"Em andamento", p:null, light:1},
+  {n:"Light Segurança — Agências remotas (nuvem)", c:"Hikvision cloud · em análise pela SI Light", v:"a definir", s:"andamento", sl:"Em andamento", p:null, light:1},
+  {n:"Light Segurança — Sala Monitoramento Marechal", c:"Rodrigo desenhando projeto", v:"a definir", s:"andamento", sl:"Em andamento", p:null, light:1},
+  {n:"Light Operacional — SE Sapucaia (PoC)", c:"Nextra · câmera térmica cedida · reunião 09/07", v:"a definir", s:"andamento", sl:"Em andamento", p:null, light:1},
+  {n:"Light Operacional — SE Integração", c:"pedido direto · projeto térmicas seccionadoras", v:"a definir", s:"andamento", sl:"Em andamento", p:null, light:1},
+  {n:"CIPA — Condomínios", c:"Rafael Gomes · R02 refeita em Intelbras · sem retorno", v:"R$ 36.990", s:"enviada", sl:"Enviada", p:35},
+  {n:"Túnel Santa Luzia", c:"Bruna Arantes · cotação Nextra/Hanwha · aguarda plantas", v:"—", s:"andamento", sl:"Em andamento", p:35},
+  {n:"Logum", c:"Antonio · apresentação enviada · sem retorno", v:"—", s:"prospeccao", sl:"Prospecção", p:45},
+  {n:"Galpões DHL — Tiago Mata", c:"LinkedIn · sem retorno · estratégia na reunião", v:"—", s:"prospeccao", sl:"Prospecção", p:5.4},
+  {n:"Galpões DHL — Luiz Asevedo", c:"LinkedIn · sem retorno · estratégia na reunião", v:"—", s:"prospeccao", sl:"Prospecção", p:5.4},
+  {n:"Light Segurança — Verba adicional", c:"possível verba no contrato Segurança · não concreta", v:"—", s:"prospeccao", sl:"Prospecção", p:null, light:1},
+];
+
+let lic = [
+  {i:1, o:"Conselho Regional de Medicina (CRM-PR)", e:"90004/2026", ab:"30/06", lim:"29/06", limhot:0, ex:"Rafael", s:"emprego", v:"—", sl:"Em pregão"},
+  {i:2, o:"Tribunal Regional Federal — TRF2-RJ", e:"90023/2026", ab:"30/06", lim:"29/06", limhot:0, ex:"Rafael/Osvair", s:"emprego", v:"—", sl:"Em pregão"},
+  {i:3, o:"Comando da Marinha / Fuzileiros Navais", e:"90011/2026", ab:"25/06", lim:"24/06", limhot:0, ex:"Osvair", s:"emprego", v:"—", sl:"Em pregão"},
+  {i:4, o:"Centro de Intendência da Marinha — Ladário", e:"90009/2026", ab:"13/07", lim:"10/07", limhot:1, ex:"Rafael", s:"elaboracao", v:"—", sl:"Em elaboração"},
+  {i:5, o:"Universidade Federal Fluminense (UFF)", e:"90021/2026", ab:"24/06", lim:"23/06", limhot:0, ex:"Rafael", s:"emprego", v:"—", sl:"Em pregão"},
+  {i:6, o:"Pref. Bom Jesus do Itabapoana", e:"90035/2026", ab:"07/07", lim:"06/07", limhot:0, ex:"Rafael", s:"emprego", v:"—", sl:"Em pregão"},
+  {i:7, o:"Escola de Magistratura do RN", e:"90002/2026", ab:"02/07", lim:"01/07", limhot:0, ex:"Osvair", s:"emprego", v:"—", sl:"Em pregão"},
+  {i:8, o:"Prefeitura Municipal de Boracéia", e:"90024/2026", ab:"29/06", lim:"26/06", limhot:0, ex:"Rafael", s:"naopart", v:"—", sl:"Não participada"},
+  {i:9, o:"Pref. São Jorge do Oeste-PR", e:"90037/2026", ab:"17/07", lim:"16/07", limhot:0, ex:"Osvair", s:"elaboracao", v:"—", sl:"Em elaboração"},
+  {i:10, o:"DNIT-ES — Controle de Acesso", e:"TP", ab:"06/07", lim:"03/07", limhot:0, ex:"Osvair", s:"emprego", v:"—", sl:"Em pregão"},
+  {i:11, o:"Comando do Exército", e:"90017/2026", ab:"15/07", lim:"14/07", limhot:0, ex:"Rafael", s:"elaboracao", v:"—", sl:"Em elaboração"},
+  {i:12, o:"Base de Aviação de Taubaté", e:"230/2026", ab:"16/07", lim:"15/07", limhot:0, ex:"Rafael", s:"elaboracao", v:"—", sl:"Em elaboração"},
+  {i:13, o:"Prefeitura Municipal de Assis-SP", e:"13/2026", ab:"20/07", lim:"17/07", limhot:0, ex:"Rafael", s:"naoiniciado", v:"—", sl:"Não iniciado"},
+  {i:14, o:"Comando de Policiamento de Choque", e:"74/2026", ab:"21/07", lim:"20/07", limhot:0, ex:"a definir", s:"naoiniciado", v:"—", sl:"Não iniciado"},
+  {i:15, o:"Prefeitura Municipal de Erechim", e:"78/2026", ab:"24/07", lim:"23/07", limhot:0, ex:"a definir", s:"naoiniciado", v:"—", sl:"Não iniciado"},
+];
+
+let funil = [
+  {l:"🔵 Prospecção", q:5},{l:"📤 Proposta enviada", q:4},{l:"🔄 Em andamento", q:9},
+  {l:"🟣 Em negociação", q:1},{l:"✅ Fechado / ganho", q:2},{l:"❌ Perdido", q:0},
+];
+let contratos = [
+  {l:"Light — Manutenção (1 equipe)", d:"24m · out/25–out/27", v:"R$ 35.180/m"},
+  {l:"Ed. Comercial Catete", d:"Locação de equipamentos", v:"R$ 3.340/m"},
+  {l:"Senac — Restaurante/CEAG", d:"Manutenção + monitoramento", v:"R$ 1.971/m"},
+  {l:"Consulado Países Baixos", d:"Manutenção até fim de 2026", v:"R$ 1.000/m"},
+  {l:"Creche — Unid. 2", d:"Locação de alarme · 36m", v:"R$ 551/m"},
+];
+let prospec = [
+  {l:"Light Conecta — Roberto Bandeira", d:"novo lead · alto potencial · follow-up WhatsApp"},
+  {l:"COX — Ana Carolina", d:"homologação de fornecedor · aguardando retorno"},
+  {l:"Galpões DHL — demais contatos", d:"logística · aguardando retorno"},
+];
+let historico = [
+  {l:"Casas Cariocas — Cosme Velho", d:"Declinado — fora do escopo (só infra)", v:"R$ 417.144"},
+  {l:"COX — Materiais + CFTV", d:"Perdido — sem retorno da compradora", v:"R$ 430.338"},
+  {l:"Câmara de Extrema", d:"Perdido — preço acima dos concorrentes", v:"R$ 45.581"},
+  {l:"COX — Interface SE Capão", d:"Perdido — sem retorno da compradora", v:"R$ 27.697"},
+];
+
+// ---- helpers de formatação ----
+const _set = (id,txt)=>{const el=document.getElementById(id); if(el&&txt!=null) el.textContent=txt;};
+const _kbrl = n => (n>=1000? (n/1000).toFixed(n>=10000?0:1).replace('.',',')+'k' : Math.round(n));
+
+/* ============================================================
+   FILTRO POR STATUS (chips)
+   Os chips saem dos dados, não de lista fixa: status novo na
+   planilha aparece sozinho. Nenhum chip marcado = mostra tudo.
+   Os KPIs NÃO reagem ao filtro — filtro é visualização, KPI é total.
+   ============================================================ */
+const filtroPipe = new Set();
+const filtroLic  = new Set();
+
+function _contarPor(arr, campo){
+  const m = new Map();
+  for(const o of arr){
+    const k = o[campo]; if(!k) continue;
+    if(!m.has(k)) m.set(k, {q:0, sl:o.sl||k});
+    m.get(k).q++;
+  }
+  return m;
+}
+
+function montarChips(containerId, arr, filtro, onChange){
+  const box = document.getElementById(containerId);
+  if(!box) return;
+  const cont = _contarPor(arr, 's');
+  // limpa do filtro status que sumiram dos dados
+  for(const s of [...filtro]) if(!cont.has(s)) filtro.delete(s);
+
+  let html = '<span class="cl">Filtrar:</span>';
+  for(const [s, info] of cont){
+    html += `<button type="button" class="chip${filtro.has(s)?' on':''}" data-s="${s}"
+      aria-pressed="${filtro.has(s)}">${info.sl}<span class="q">${info.q}</span></button>`;
+  }
+  html += `<button type="button" class="chip clear" data-clear="1">Todos</button>`;
+  box.innerHTML = html;
+
+  box.querySelectorAll('.chip').forEach(btn=>{
+    btn.addEventListener('click', ()=>{
+      if(btn.dataset.clear){ filtro.clear(); }
+      else{
+        const s = btn.dataset.s;
+        filtro.has(s) ? filtro.delete(s) : filtro.add(s);
+      }
+      onChange();
+    });
+  });
+}
+
+function aplicarFiltro(arr, filtro){
+  return filtro.size===0 ? arr : arr.filter(o=>filtro.has(o.s));
+}
+
+// ---- render das tabelas/painéis (reutilizável: roda no load e após o fetch) ----
+function renderPipe(){
+  const vis = aplicarFiltro(pipeline, filtroPipe);
+  const body = document.getElementById('pipe-body');
+  body.innerHTML = vis.length ? vis.map(o=>`
+    <tr class="${o.light?'light-row':''}">
+      <td><div class="op">${o.n}<small>${o.c}</small></div></td>
+      <td class="r mono">${o.v}</td>
+      <td class="c"><span class="pill st-${o.s}">${o.sl}</span></td>
+      <td class="c prob mono">${o.p===null?'—':o.p+'%'}</td>
+    </tr>`).join('')
+    : `<tr><td colspan="4" class="vazio">Nenhuma oportunidade com esse filtro.</td></tr>`;
+  const cnt = document.getElementById('pipe-count');
+  if(cnt) cnt.textContent = filtroPipe.size
+    ? `${vis.length} de ${pipeline.length} oportunidades`
+    : `${pipeline.length} oportunidades`;
+}
+
+function renderLic(){
+  const vis = aplicarFiltro(lic, filtroLic);
+  const body = document.getElementById('lic-body');
+  body.innerHTML = vis.length ? vis.map(x=>`
+    <tr>
+      <td class="c hide-mobile mono">${x.i}</td>
+      <td class="op">${x.o}</td>
+      <td class="c hide-mobile mono">${x.e}</td>
+      <td class="c mono">${x.ab}</td>
+      <td class="c mono" style="${x.limhot?'color:var(--red);font-weight:700':''}">${x.lim||'—'}</td>
+      <td class="c hide-mobile">${x.ex}</td>
+      <td class="r hide-mobile mono">${x.v||'—'}</td>
+      <td class="c"><span class="pill st-${x.s}">${x.sl}</span></td>
+    </tr>`).join('')
+    : `<tr><td colspan="8" class="vazio">Nenhuma licitação com esse filtro.</td></tr>`;
+}
+
+function renderTudo(){
+  montarChips('chips-pipe', pipeline, filtroPipe, renderPipe);
+  montarChips('chips-lic',  lic,      filtroLic,  renderLic);
+  renderPipe();
+  renderLic();
+
+  document.getElementById('funil').innerHTML = funil.map(f=>`
+    <div class="li"><span class="l">${f.l}</span><span class="v mono">${f.q}</span></div>`).join('');
+  document.getElementById('contratos').innerHTML = contratos.map(c=>`
+    <div class="li"><span class="l">${c.l}<small>${c.d}</small></span><span class="v mono">${c.v}</span></div>`).join('');
+  document.getElementById('prospec').innerHTML = prospec.map(p=>`
+    <div class="li"><span class="l">${p.l}<small>${p.d}</small></span></div>`).join('');
+  document.getElementById('historico').innerHTML = historico.map(h=>`
+    <div class="li"><span class="l">${h.l}<small>${h.d}</small></span><span class="v mono" style="color:var(--red)">${h.v}</span></div>`).join('');
+}
+renderTudo();
+
+/* ============================================================
+   DADOS VIVOS — busca o JSON gerado pelo Caminho A.
+   Se a API responder, sobrescreve os dados e re-renderiza.
+   Se falhar (offline, script ainda não rodou), mantém o
+   conteúdo estático acima como fallback — nada quebra.
+   ============================================================ */
+async function carregarDadosVivos(){
+  try{
+    const resp = await fetch('/api/dados/comercial', {cache:'no-store'});
+    if(!resp.ok) return;               // 404 enquanto o script não rodou
+    const d = await resp.json();
+
+    // KPIs de topo
+    if(d.kpis){
+      const k=d.kpis;
+      _set('k-rec', _kbrl(k.recorrente_ativo));
+      _set('k-rec-sub', `${k.recorrente_ativo_fmt} · ${k.n_contratos} contratos`);
+      _set('k-meta', Math.round(k.pct_recorrente)+'%');
+      _set('k-meta-sub', `faltam ${fmtBRL(k.gap_recorrente)} p/ R$ 60k`);
+      _set('k-pipe', k.pipeline_ativo);
+      _set('k-obras', String(k.pct_obras).replace('.',',')+'%');
+      _set('k-obras-sub', `${k.obras_faturadas_fmt} de R$ 2,4M`);
+      _set('k-pond', _kbrl(k.recorrente_ponderado));
+      // metas
+      _set('m-rec', k.recorrente_ativo_fmt+'/mês');
+      _set('m-obras', k.obras_faturadas_fmt);
+      const b1=document.getElementById('m-rec-bar'); if(b1) b1.style.width=Math.min(100,k.pct_recorrente)+'%';
+      const b2=document.getElementById('m-obras-bar'); if(b2) b2.style.width=Math.min(100,k.pct_obras)+'%';
+      // nota dinâmica da Meta 2: lista as obras já aprovadas (nunca envelhece)
+      const nota=document.getElementById('m-obras-nota');
+      if(nota && Array.isArray(k.obras_ganhas) && k.obras_ganhas.length){
+        const nomes=k.obras_ganhas.map(o=>o.n
+          .replace(/^Light Segurança — /,'').replace(/^Light — /,'')
+          .replace(/\s*\(.*\)$/,'').trim());
+        nota.innerHTML = `✅ <b>${k.n_obras_ganhas} obras aprovadas</b> somam `
+          + `<b>${k.obras_faturadas_fmt}</b> (${String(k.pct_obras).replace('.',',')}% da meta). `
+          + `O <b>Pacote CFTV Emergencial 2026</b> da Light é executado obra a obra — cada subestação `
+          + `aprovada entra como ganho. Já aprovadas: ${nomes.join(', ')}. `
+          + `O restante do pacote segue em “Em andamento” e soma conforme for aprovado.`;
+      }
+    }
+    // tabelas/painéis
+    if(Array.isArray(d.pipeline))  pipeline  = d.pipeline;
+    if(Array.isArray(d.licitacoes))lic       = d.licitacoes;
+    if(Array.isArray(d.funil))     funil     = d.funil;
+    if(Array.isArray(d.contratos)) contratos = d.contratos;
+    if(Array.isArray(d.prospec))   prospec   = d.prospec;
+    if(Array.isArray(d.historico)) historico = d.historico;
+
+    renderTudo();
+    renderLicKpis(d.lic_kpis);
+    renderInteligencia(d);
+  }catch(e){
+    // silencioso: mantém o fallback estático
+    console.warn('dados vivos indisponíveis, usando fallback', e);
+  }
+}
+function fmtBRL(n){ return 'R$ '+Math.round(n).toLocaleString('pt-BR'); }
+function renderLicKpis(lk){
+  if(!lk) return;
+  // contagens
+  const map={'lk-total':lk.total,'lk-pregao':lk.em_pregao,'lk-elab':lk.em_elaboracao,
+             'lk-naoini':lk.nao_iniciado,'lk-enviada':lk.proposta_enviada};
+  for(const id in map) _set(id, map[id]);
+
+  // valores por resultado
+  const proc = n => `${n||0} ${n===1?'processo':'processos'}`;
+  _set('vk-ganho',        lk.valor_ganho_fmt || '—');
+  _set('vk-ganho-sub',    proc(lk.qtd_ganho));
+  _set('vk-perdido',      lk.valor_perdido_fmt || '—');
+  _set('vk-perdido-sub',  proc(lk.qtd_perdido));
+  _set('vk-andamento',    lk.valor_andamento_fmt || '—');
+  _set('vk-andamento-sub', proc(lk.qtd_andamento));
+
+  // aviso de cobertura: enquanto houver linha sem VALOR ESTIMADO, o total
+  // em andamento está incompleto e isso precisa ficar explícito.
+  const av = document.getElementById('vk-cobertura');
+  if(av){
+    if(lk.qtd_sem_valor > 0){
+      const cobertos = lk.qtd_andamento - lk.qtd_sem_valor;
+      av.innerHTML = `📌 <b>Ação p/ o setor de licitação:</b> cravar o VALOR ESTIMADO em `
+        + `<b>${lk.qtd_sem_valor}</b> processo${lk.qtd_sem_valor===1?'':'s'} ainda sem valor. `
+        + `O total em andamento (${lk.valor_andamento_fmt}) cobre ${cobertos} de ${lk.qtd_andamento} `
+        + `e cresce à medida que esses valores forem preenchidos.`;
+      av.hidden = false;
+    } else {
+      av.innerHTML = `✅ Todos os ${lk.qtd_andamento} processos em andamento têm VALOR ESTIMADO — `
+        + `o total (${lk.valor_andamento_fmt}) está completo.`;
+      av.hidden = false;
+    }
+  }
+}
+/* ============================================================
+   INTELIGÊNCIA COMERCIAL — consome os campos analíticos do JSON
+   (concentração, meta projetada, qualidade do dado, conversão).
+   Só aparece quando a API responde; fica oculta no fallback.
+   ============================================================ */
+function renderInteligencia(d){
+  const k = d.kpis || {};
+  const sec = document.getElementById('sec-intel');
+  if(sec) sec.hidden = false;
+
+  // ---- SUG 1: concentração de cliente ----
+  if(k.concentracao_pct != null){
+    const pct = k.concentracao_pct, resto = Math.max(0, 100 - pct);
+    const bar = document.getElementById('conc-bar');
+    if(bar){
+      bar.innerHTML =
+        `<span class="seg dom" style="width:${pct}%">${k.concentracao_cliente} ${pct}%</span>`
+      + `<span class="seg rest" style="width:${resto}%">demais ${Math.round(resto*10)/10}%</span>`;
+    }
+    const risco = document.getElementById('conc-risco');
+    if(risco){
+      let cls='ok', txt=`Diversificado — maior cliente é ${pct}% da receita.`;
+      if(pct >= 60){ cls='alto'; txt=`Risco alto — ${k.concentracao_pct}% da receita recorrente vem de ${k.concentracao_cliente} (${k.concentracao_valor_fmt}/mês). Perder essa conta derruba as duas metas.`; }
+      else if(pct >= 35){ cls='medio'; txt=`Atenção — ${k.concentracao_pct}% concentrado em ${k.concentracao_cliente}. Vale diversificar a base.`; }
+      risco.className = 'conc-risco '+cls;
+      risco.textContent = txt;
+    }
+  }
+
+  // ---- SUG 2: meta de obras projetada ----
+  if(k.pct_obras_proj != null){
+    const real = Math.min(100, k.pct_obras||0);
+    const proj = Math.min(100, k.pct_obras_proj||0);
+    const er=document.getElementById('proj-real'); if(er) er.style.width=real+'%';
+    const ep=document.getElementById('proj-proj'); if(ep) ep.style.width=proj+'%';
+    _set('proj-real-v', `${k.obras_faturadas_fmt} (${String(k.pct_obras).replace('.',',')}%)`);
+    _set('proj-proj-v', `${k.obras_projetadas_fmt} (${String(k.pct_obras_proj).replace('.',',')}%)`);
+  }
+
+  // ---- SUG 3: qualidade do dado do pipeline ----
+  if(k.pipe_sem_prob != null){
+    _set('dq-prob', k.pipe_sem_prob);
+    const det = document.getElementById('dq-detalhe');
+    if(det){
+      if(k.pipe_valor_sem_prob > 0){
+        det.innerHTML = `<b>${k.pipe_valor_sem_prob_fmt}</b> em obras (ex.: o pacote Light) `
+          + `ficam fora do recorrente ponderado por falta de probabilidade. Preencher a coluna `
+          + `<b>PROB.</b> dessas linhas corrige a projeção acima.`;
+      } else {
+        det.textContent = 'Todas as oportunidades têm probabilidade preenchida. ✅';
+      }
+    }
+    const box = document.getElementById('box-dq');
+    if(box) box.classList.toggle('warn-box', k.pipe_sem_prob > 0);
+  }
+
+  // ---- SUG 5: conversão por origem + motivos ----
+  const an = d.analise;
+  if(an){
+    const lista = document.getElementById('conv-lista');
+    if(lista){
+      lista.innerHTML = (an.conversao_origem||[]).map(c=>{
+        const tot = c.encerradas||1;
+        const gp = Math.round(100*c.ganho/tot), pp = 100-gp;
+        const taxa = c.taxa_ganho!=null ? c.taxa_ganho+'%' : '—';
+        return `<div class="conv-row">
+          <span class="og">${c.origem}</span>
+          <span class="conv-track">
+            <span class="g" style="width:${gp}%"></span><span class="p" style="width:${pp}%"></span>
+          </span>
+          <span class="stat">${c.ganho}G · ${c.perdido}P · ${taxa}</span>
+        </div>`;
+      }).join('');
+    }
+    const mot = document.getElementById('conv-motivos');
+    if(mot){
+      mot.innerHTML = (an.motivos_perda||[]).map(m=>
+        `<span class="chip"><b>${m.q}×</b> ${m.motivo}</span>`).join('');
+    }
+    const am = document.getElementById('conv-amostra');
+    if(am){
+      am.textContent = an.amostra <= 8
+        ? `Base pequena (${an.amostra} propostas encerradas) — leia como tendência, não estatística.`
+        : `Base: ${an.amostra} propostas encerradas.`;
+    }
+  }
+}
+carregarDadosVivos();
+
+// view toggle
+function setView(v){
+  const lic = v==='lic';
+  document.body.classList.toggle('lic-view', lic);
+  document.getElementById('btn-lic').classList.toggle('active', lic);
+  document.getElementById('btn-geral').classList.toggle('active', !lic);
+  document.getElementById('btn-lic').setAttribute('aria-selected', lic);
+  document.getElementById('btn-geral').setAttribute('aria-selected', !lic);
+  if(lic) document.getElementById('licitacoes').scrollIntoView({behavior:'smooth',block:'start'});
+  else window.scrollTo({top:0,behavior:'smooth'});
+}
+</script>
+</body>
+</html>

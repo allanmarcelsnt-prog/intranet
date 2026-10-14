@@ -1,0 +1,429 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<title>Agenda Dahua Academy — Intranet Safenet</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700&family=Lato:wght@400;700&family=IBM+Plex+Mono:wght@500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* Dahua — preservado no header, e a marca do treinamento */
+    --navy-deep:#0A1E33;
+    --navy:#123C61;
+    --blue:#1D63A6;
+    --blue-bright:#3E8FDD;
+    /* Safenet — identidade do portal */
+    --sf-verde:#7AC143;
+    --sf-laranja:#E8401C;
+    --sf-magenta:#D41B6C;
+    --sf-cyan:#00B5E2;
+    --sf-escuro:#0d2614;
+
+    --bg:#EEF2F7;
+    --paper:#FFFFFF;
+    --ink:#0F1E2E;
+    --muted:#5B6B7C;
+    --line:#D7E0E9;
+    --rec:#E4483D;
+    --amber:#F0A83A;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg);
+    font-family:'Lato',sans-serif; color:var(--ink);
+    display:flex; justify-content:center; padding:28px 16px;
+  }
+  .board{
+    width:100%; max-width:1020px; background:var(--paper);
+    border-radius:6px; overflow:hidden;
+    box-shadow:0 20px 60px -20px rgba(10,30,51,.35);
+  }
+
+  /* ---------- VOLTAR ---------- */
+  .voltar{
+    background:var(--sf-escuro); padding:9px 44px;
+  }
+  .voltar a{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+    color:var(--sf-verde); text-decoration:none; letter-spacing:.05em;
+  }
+  .voltar a:hover{ text-decoration:underline; }
+
+  /* ---------- HEADER (Dahua) ---------- */
+  header{
+    position:relative; color:#fff; padding:34px 44px 30px; overflow:hidden;
+    background:
+      radial-gradient(1100px 420px at 85% -10%, rgba(62,143,221,.35), transparent 60%),
+      linear-gradient(160deg, var(--navy-deep) 0%, var(--navy) 62%, var(--blue) 100%);
+  }
+  header::after{
+    content:""; position:absolute; inset:0; pointer-events:none;
+    background:repeating-linear-gradient(180deg, rgba(255,255,255,.035) 0, rgba(255,255,255,.035) 1px, transparent 1px, transparent 3px);
+  }
+  .brandrow{
+    display:flex; align-items:center; justify-content:space-between;
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px;
+    letter-spacing:.08em; color:rgba(255,255,255,.75);
+    position:relative; z-index:1;
+  }
+  .rec{ display:inline-flex; align-items:center; gap:7px; }
+  .rec .dot{
+    width:8px;height:8px;border-radius:50%; background:var(--rec);
+    box-shadow:0 0 0 3px rgba(228,72,61,.25);
+    animation:pulse 1.8s ease-in-out infinite;
+  }
+  @keyframes pulse{0%,100%{opacity:1}50%{opacity:.45}}
+  @media (prefers-reduced-motion:reduce){ .rec .dot{animation:none} }
+  .eyebrow{
+    margin-top:22px; font-family:'IBM Plex Mono',monospace; font-size:12px;
+    letter-spacing:.16em; text-transform:uppercase; color:var(--amber);
+    position:relative; z-index:1;
+  }
+  h1{
+    font-family:'Montserrat',sans-serif; font-weight:700;
+    font-size:clamp(28px,4.4vw,40px); line-height:1.05;
+    margin:9px 0 6px; letter-spacing:-.01em; position:relative; z-index:1;
+  }
+  h1 span{ color:var(--blue-bright); }
+  .sub{
+    font-size:14.5px; color:rgba(255,255,255,.82);
+    max-width:560px; line-height:1.5; position:relative; z-index:1;
+  }
+  .tags{ margin-top:16px; display:flex; gap:8px; flex-wrap:wrap; position:relative; z-index:1; }
+  .tag{
+    display:inline-flex; align-items:center; gap:7px;
+    background:rgba(255,255,255,.1); border:1px solid rgba(255,255,255,.28);
+    padding:6px 13px; border-radius:999px; font-size:12.5px; font-weight:700; color:#fff;
+  }
+
+  /* ---------- FILTROS ---------- */
+  .filtros{
+    display:flex; align-items:center; gap:8px; flex-wrap:wrap;
+    padding:16px 44px; background:#F7FAFD; border-bottom:1px solid var(--line);
+  }
+  .filtros .rot{
+    font-family:'IBM Plex Mono',monospace; font-size:11px;
+    text-transform:uppercase; letter-spacing:.1em; color:var(--muted); margin-right:4px;
+  }
+  .fbtn{
+    font-family:'Montserrat',sans-serif; font-size:12px; font-weight:600;
+    padding:7px 14px; border-radius:999px; cursor:pointer;
+    background:#fff; color:var(--navy); border:1px solid var(--line);
+    transition:all .12s ease;
+  }
+  .fbtn:hover{ border-color:var(--blue); }
+  .fbtn[aria-pressed="true"]{
+    background:var(--navy); color:#fff; border-color:var(--navy);
+  }
+  .contador{
+    margin-left:auto; font-family:'IBM Plex Mono',monospace;
+    font-size:11.5px; color:var(--muted);
+  }
+
+  /* ---------- LISTA ---------- */
+  #conteudo{ padding:6px 0 0; }
+  .estado{
+    padding:56px 44px; text-align:center; color:var(--muted); font-size:14px;
+  }
+  .mes{ padding:26px 44px 8px; }
+  .mes + .mes{ border-top:1px solid var(--line); }
+  .mes-titulo{
+    font-family:'Montserrat',sans-serif; font-size:13px; font-weight:700;
+    letter-spacing:.14em; text-transform:uppercase; color:var(--navy);
+    padding-bottom:9px; border-bottom:2px solid var(--navy); margin-bottom:6px;
+  }
+
+  .item{
+    display:grid; grid-template-columns:84px 1fr auto;
+    gap:16px; padding:16px 0; border-bottom:1px dashed var(--line);
+    align-items:start;
+  }
+  .item:last-child{ border-bottom:none; }
+  .item.destaque{
+    background:linear-gradient(90deg, rgba(232,64,28,.05), transparent 60%);
+    border-left:3px solid var(--sf-laranja);
+    padding-left:13px; margin-left:-16px;
+    border-radius:0 6px 6px 0;
+  }
+  .item.rolando{
+    background:linear-gradient(90deg, rgba(122,193,67,.09), transparent 60%);
+    border-left:3px solid var(--sf-verde);
+    padding-left:13px; margin-left:-16px;
+    border-radius:0 6px 6px 0;
+  }
+
+  .timestamp{
+    font-family:'IBM Plex Mono',monospace; font-size:11.5px; color:var(--navy);
+    background:#F1F6FC; border:1px solid var(--line); border-radius:4px;
+    padding:6px; text-align:center; line-height:1.35;
+  }
+  .timestamp b{ display:block; font-size:14px; color:var(--navy-deep); }
+
+  .curso-nome{
+    font-family:'Montserrat',sans-serif;
+    font-size:15px; font-weight:600; color:var(--ink); line-height:1.3;
+  }
+  .curso-meta{
+    margin-top:4px; font-family:'IBM Plex Mono',monospace;
+    font-size:11px; color:var(--muted);
+  }
+  .badges{ display:flex; gap:6px; flex-wrap:wrap; margin-top:7px; }
+  .badge{
+    font-size:10.5px; font-weight:700; letter-spacing:.03em;
+    padding:2px 7px; border-radius:4px; border:1px solid;
+  }
+  .b-restrito{ color:var(--rec); background:rgba(228,72,61,.08); border-color:rgba(228,72,61,.25); }
+  .b-gratis{ color:#3f7a1e; background:rgba(122,193,67,.12); border-color:rgba(122,193,67,.4); }
+  .b-modal{ color:var(--blue); background:rgba(29,99,166,.08); border-color:rgba(29,99,166,.22); }
+  .b-publico{ color:var(--muted); background:#F1F6FC; border-color:var(--line); }
+  .b-conta{ color:var(--sf-laranja); background:rgba(232,64,28,.1); border-color:rgba(232,64,28,.3); }
+  .b-agora{ color:#3f7a1e; background:rgba(122,193,67,.18); border-color:rgba(122,193,67,.5); }
+  .obs{
+    margin-top:8px; font-size:11.5px; color:var(--muted); line-height:1.45;
+    background:#FFF8E9; border:1px solid rgba(240,168,58,.4);
+    border-left:3px solid var(--amber);
+    padding:7px 10px; border-radius:0 4px 4px 0; max-width:520px;
+  }
+
+  .acoes{ display:flex; flex-direction:column; gap:8px; min-width:158px; padding-left:8px; }
+  .btn{
+    font-family:'Montserrat',sans-serif; font-size:11.5px; font-weight:700;
+    text-decoration:none; text-align:center; padding:9px 14px;
+    border-radius:5px; white-space:nowrap; transition:filter .12s ease;
+  }
+  .btn:hover{ filter:brightness(1.08); }
+  .btn-inscrever{ background:var(--sf-laranja); color:#fff; }
+  .btn-zoom{ background:#fff; color:var(--navy); border:1px solid var(--line); }
+  .btn-zoom:hover{ border-color:var(--blue); }
+
+  /* ---------- FOOTER ---------- */
+  footer{
+    background:var(--navy-deep); color:#fff; padding:24px 44px;
+    display:flex; align-items:center; justify-content:space-between;
+    gap:20px; flex-wrap:wrap; position:relative;
+  }
+  footer::before{
+    content:""; position:absolute; left:0; right:0; top:0; height:3px;
+    background:linear-gradient(90deg,var(--sf-verde),var(--sf-cyan),var(--sf-magenta),var(--sf-laranja));
+  }
+  .cta-text{ font-size:13px; color:rgba(255,255,255,.8); line-height:1.6; max-width:540px; }
+  .cta-text strong{ color:#fff; }
+  .cta-links{ display:flex; flex-direction:column; gap:6px; font-family:'IBM Plex Mono',monospace; font-size:12.5px; }
+  .cta-links a{ color:var(--blue-bright); text-decoration:none; }
+  .cta-links a:hover{ text-decoration:underline; }
+  .footnote{
+    padding:13px 44px 20px; font-size:11px; color:var(--muted);
+    background:var(--paper); border-top:1px solid var(--line);
+    display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap;
+  }
+
+  @media (max-width:760px){
+    header,.filtros,.mes,footer,.footnote,.voltar{ padding-left:20px; padding-right:20px; }
+    .item{ grid-template-columns:70px 1fr; }
+    .acoes{ grid-column:1 / -1; flex-direction:row; }
+    .acoes .btn{ flex:1; }
+    .contador{ margin-left:0; width:100%; }
+  }
+  @media print{
+    body{ background:#fff; padding:0; }
+    .board{ box-shadow:none; max-width:100%; }
+    .filtros,.acoes,.voltar{ display:none; }
+  }
+</style>
+</head>
+<body>
+  <div class="board">
+
+    <div class="voltar"><a href="/">← Voltar para a intranet</a></div>
+
+    <header>
+      <div class="brandrow">
+        <span class="rec"><span class="dot"></span>SAFENET TECNOLOGIA — COMUNICADO INTERNO</span>
+        <span id="periodo-topo">AGENDA 2026</span>
+      </div>
+      <div class="eyebrow">Dahua Academy Brasil · Capacitação técnica</div>
+      <h1>Agenda de treinamentos<br><span>Dahua Academy</span></h1>
+      <p class="sub">Cronograma oficial de cursos e certificações Dahua Technology. Inscrição pelo formulário de cada turma — vagas por ordem de inscrição.</p>
+      <div class="tags">
+        <span class="tag">✓ Gratuito para clientes e parceiros Dahua</span>
+        <span class="tag">💻 100% online</span>
+      </div>
+    </header>
+
+    <div class="filtros">
+      <span class="rot">Filtrar</span>
+      <button class="fbtn" data-f="todos" aria-pressed="true">Todos</button>
+      <button class="fbtn" data-f="Tecnico" aria-pressed="false">Técnico</button>
+      <button class="fbtn" data-f="Comercial" aria-pressed="false">Comercial</button>
+      <button class="fbtn" data-f="livre" aria-pressed="false">Sem pré-requisito</button>
+      <span class="contador" id="contador"></span>
+    </div>
+
+    <div id="conteudo">
+      <div class="estado">Carregando agenda…</div>
+    </div>
+
+    <footer>
+      <div class="cta-text">
+        <strong>Como se inscrever:</strong> clique em <em>Inscreva-se</em> no curso desejado e preencha o formulário. Depois, registre-se no Zoom pelo segundo botão. Dúvidas sobre datas ou pré-requisitos: fale com o setor operacional.
+      </div>
+      <div class="cta-links">
+        <span>🌐 <a href="https://www.dahuaacademy.com.br/agenda-de-treinamentos-dahua-technology" target="_blank" rel="noopener">dahuaacademy.com.br</a></span>
+        <span>💬 WhatsApp +55 11 95887-0118</span>
+      </div>
+    </footer>
+
+    <div class="footnote">
+      <span>Comunicado interno · Safenet Tecnologia · Fonte: Dahua Academy Brasil</span>
+      <span id="atualizado"></span>
+    </div>
+
+  </div>
+
+<script>
+(function(){
+  const API = '/api/dados/treinamentos';
+  const MESES = ['Janeiro','Fevereiro','Março','Abril','Maio','Junho','Julho','Agosto','Setembro','Outubro','Novembro','Dezembro'];
+  const ABREV = ['JAN','FEV','MAR','ABR','MAI','JUN','JUL','AGO','SET','OUT','NOV','DEZ'];
+
+  const esc = s => String(s==null?'':s).replace(/[&<>"']/g, m =>
+    ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));
+
+  const d = iso => { const [a,m,g] = iso.split('-').map(Number); return new Date(a, m-1, g); };
+  function diasAte(iso){
+    const h = new Date(); h.setHours(0,0,0,0);
+    return Math.round((d(iso) - h) / 86400000);
+  }
+
+  let CURSOS = [];
+  let filtro = 'todos';
+
+  function selo(c){
+    // caixa de data: 06/AGO, 10-14/AGO, ou 28 SET-02 OUT
+    const i = d(c.data_inicio), f = d(c.data_fim);
+    const dd = n => String(n).padStart(2,'0');
+    if(c.data_inicio === c.data_fim)
+      return `${dd(i.getDate())}<br><b>${ABREV[i.getMonth()]}</b>`;
+    if(i.getMonth() === f.getMonth())
+      return `${dd(i.getDate())}–${dd(f.getDate())}<br><b>${ABREV[i.getMonth()]}</b>`;
+    return `${dd(i.getDate())} ${ABREV[i.getMonth()]}<br><b>–${dd(f.getDate())} ${ABREV[f.getMonth()]}</b>`;
+  }
+
+  function passa(c){
+    if(filtro === 'todos')  return true;
+    if(filtro === 'livre')  return !c.restricao;
+    return c.publico === filtro || c.publico === 'Ambos';
+  }
+
+  function render(){
+    const alvo = document.getElementById('conteudo');
+    const lista = CURSOS.filter(passa);
+    const cont = document.getElementById('contador');
+    cont.textContent = lista.length
+      ? `${lista.length} curso${lista.length>1?'s':''} · próximos primeiro`
+      : '';
+
+    if(!CURSOS.length){
+      alvo.innerHTML = `<div class="estado">Nenhum treinamento programado no momento.<br>
+        Novas turmas aparecem aqui automaticamente.</div>`;
+      return;
+    }
+    if(!lista.length){
+      alvo.innerHTML = `<div class="estado">Nenhum curso com esse filtro.</div>`;
+      return;
+    }
+
+    // agrupa por mes de inicio
+    const grupos = {};
+    lista.forEach(c => {
+      const dt = d(c.data_inicio);
+      const k = `${dt.getFullYear()}-${dt.getMonth()}`;
+      (grupos[k] = grupos[k] || []).push(c);
+    });
+
+    let html = '';
+    Object.keys(grupos).sort().forEach(k => {
+      const [ano, mes] = k.split('-').map(Number);
+      html += `<div class="mes"><div class="mes-titulo">${MESES[mes]} ${ano}</div>`;
+
+      grupos[k].forEach(c => {
+        const dIni = diasAte(c.data_inicio), dFim = diasAte(c.data_fim);
+        const rolando = dIni <= 0 && dFim >= 0;
+        const proximo = !rolando && c === lista[0];
+
+        let badges = '';
+        if(rolando)      badges += `<span class="badge b-agora">● ACONTECENDO AGORA</span>`;
+        else if(dIni === 0) badges += `<span class="badge b-conta">É HOJE</span>`;
+        else if(dIni === 1) badges += `<span class="badge b-conta">É AMANHÃ</span>`;
+        else if(dIni <= 14) badges += `<span class="badge b-conta">FALTAM ${dIni} DIAS</span>`;
+        if(c.gratuito)   badges += `<span class="badge b-gratis">GRATUITO</span>`;
+        if(c.modalidade) badges += `<span class="badge b-modal">${esc(c.modalidade)}</span>`;
+        if(c.publico && c.publico !== 'Ambos') badges += `<span class="badge b-publico">${esc(c.publico)}</span>`;
+        if(c.restricao)  badges += `<span class="badge b-restrito">${esc(c.restricao)}</span>`;
+
+        let acoes = '';
+        if(c.link_inscricao)
+          acoes += `<a class="btn btn-inscrever" href="${esc(c.link_inscricao)}" target="_blank" rel="noopener">Inscreva-se →</a>`;
+        if(c.link_zoom)
+          acoes += `<a class="btn btn-zoom" href="${esc(c.link_zoom)}" target="_blank" rel="noopener">Registrar no Zoom</a>`;
+
+        const classe = rolando ? ' rolando' : (proximo ? ' destaque' : '');
+
+        html += `
+          <div class="item${classe}">
+            <div class="timestamp">${selo(c)}</div>
+            <div>
+              <div class="curso-nome">${esc(c.curso)}</div>
+              <div class="curso-meta">${esc(c.hora_inicio)} – ${esc(c.hora_fim)}${c.periodo ? ' · ' + esc(c.periodo.toLowerCase()) : ''}</div>
+              <div class="badges">${badges}</div>
+              ${c.obs_acesso ? `<div class="obs">ℹ️ ${esc(c.obs_acesso)}</div>` : ''}
+            </div>
+            <div class="acoes">${acoes}</div>
+          </div>`;
+      });
+      html += `</div>`;
+    });
+    alvo.innerHTML = html;
+  }
+
+  document.querySelectorAll('.fbtn').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.fbtn').forEach(o => o.setAttribute('aria-pressed','false'));
+      b.setAttribute('aria-pressed','true');
+      filtro = b.dataset.f;
+      render();
+    });
+  });
+
+  fetch(API, {cache:'no-store'})
+    .then(r => r.ok ? r.json() : Promise.reject(r.status))
+    .then(dados => {
+      CURSOS = (dados.cursos || [])
+        .filter(c => diasAte(c.data_fim) >= 0)
+        .sort((a,b) => a.data_inicio.localeCompare(b.data_inicio));
+
+      if(CURSOS.length){
+        const p = d(CURSOS[0].data_inicio), u = d(CURSOS[CURSOS.length-1].data_fim);
+        document.getElementById('periodo-topo').textContent =
+          p.getMonth() === u.getMonth()
+            ? `${ABREV[p.getMonth()]} ${p.getFullYear()}`
+            : `${ABREV[p.getMonth()]} / ${ABREV[u.getMonth()]} ${u.getFullYear()}`;
+      }
+      if(dados.atualizado_em){
+        const t = new Date(dados.atualizado_em);
+        document.getElementById('atualizado').textContent =
+          `Atualizado em ${String(t.getDate()).padStart(2,'0')}/${String(t.getMonth()+1).padStart(2,'0')}/${t.getFullYear()} às ${String(t.getHours()).padStart(2,'0')}:${String(t.getMinutes()).padStart(2,'0')}`;
+      }
+      render();
+    })
+    .catch(err => {
+      document.getElementById('conteudo').innerHTML =
+        `<div class="estado">Não foi possível carregar a agenda agora.<br>
+         Tente recarregar a página ou avise o TI.</div>`;
+      console.error('treinamentos:', err);
+    });
+})();
+</script>
+</body>
+</html>

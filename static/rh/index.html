@@ -1,0 +1,2853 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Gestor de RH — Safenet</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600;700;800&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --g:#7AC143;--g2:#5c9e2e;--pk:#C8185A;--bl:#5BA4CF;--or:#E8401C;
+  --navy:#164023;--navy2:#0d2614;
+  --bg:#f4f7f1;--w:#fff;--b1:#e3ecd9;--b2:#d0dcc8;
+  --tx:#1a1a1a;--mu:#6b6b6b;--f0:#f0f5ea;--f1:#e8f0e0;
+  --red:#c0392b;--redbg:#fdecea;
+  --shadow:0 1px 3px rgba(13,38,20,.06),0 8px 24px rgba(13,38,20,.08);
+}
+body{font-family:'Lato',sans-serif;background:var(--bg);color:var(--tx);min-height:100vh}
+
+/* ── LOGIN ── */
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh;padding:20px}
+.login-box{background:var(--w);border-radius:16px;padding:36px 40px;width:100%;max-width:420px;box-shadow:var(--shadow)}
+.login-logo{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.login-logo img{width:48px;height:48px;object-fit:contain}
+.login-logo-text{font-family:'Montserrat',sans-serif;font-weight:800;font-size:18px;color:var(--navy)}
+.login-logo-sub{font-size:11px;color:var(--mu);margin-top:1px}
+.form-group{margin-bottom:16px}
+.form-group label{display:block;font-size:11px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:5px}
+.form-group select,.form-group input{width:100%;padding:10px 12px;border:1px solid var(--b2);border-radius:8px;font-size:14px;background:var(--f0);color:var(--tx);font-family:'Lato',sans-serif;transition:border-color .14s}
+.form-group select:focus,.form-group input:focus{outline:none;border-color:var(--g)}
+.btn-login{width:100%;padding:12px;background:var(--g);color:#fff;border:none;border-radius:8px;font-family:'Montserrat',sans-serif;font-weight:700;font-size:14px;cursor:pointer;margin-top:4px;transition:background .14s}
+.btn-login:hover{background:var(--g2)}
+.login-err{color:var(--red);font-size:13px;margin-top:10px;text-align:center;display:none}
+#definir-senha-form{display:none}
+
+/* ── APP SHELL ── */
+#app{display:none;min-height:100vh;flex-direction:column}
+
+/* TOPBAR */
+.topbar{background:var(--navy2);color:#fff;padding:0 24px;height:56px;display:flex;align-items:center;gap:16px;flex-shrink:0;position:sticky;top:0;z-index:100}
+.topbar-logo{display:flex;align-items:center;gap:10px;text-decoration:none}
+.topbar-logo img{width:32px;height:32px;object-fit:contain;filter:brightness(0) invert(1)}
+.topbar-title{font-family:'Montserrat',sans-serif;font-weight:800;font-size:14px;letter-spacing:.5px;color:#fff}
+.topbar-sub{font-size:10px;color:rgba(255,255,255,.45);margin-top:1px}
+.topbar-spacer{flex:1}
+.topbar-user{font-size:12px;color:rgba(255,255,255,.6)}
+.topbar-btn{display:inline-flex;align-items:center;gap:6px;padding:7px 14px;border-radius:8px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;cursor:pointer;border:none;transition:all .14s;text-decoration:none}
+.btn-g{background:var(--g);color:#fff}.btn-g:hover{background:var(--g2)}
+.btn-ghost{background:rgba(255,255,255,.08);color:rgba(255,255,255,.75);border:1px solid rgba(255,255,255,.15)}.btn-ghost:hover{background:rgba(255,255,255,.14)}
+
+/* NAV TABS */
+.nav-tabs{background:var(--w);border-bottom:1px solid var(--b1);padding:0 24px;display:flex;gap:4px}
+.tab{padding:12px 16px;font-family:'Montserrat',sans-serif;font-size:12px;font-weight:700;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;transition:all .14s;white-space:nowrap}
+.tab:hover{color:var(--tx)}
+.tab.active{color:var(--g);border-bottom-color:var(--g)}
+
+/* CONTENT */
+.content{flex:1;padding:20px 24px;max-width:1300px;width:100%;margin:0 auto}
+
+/* SCREENS */
+.screen{display:none}.screen.active{display:block}
+
+/* CARDS KPI */
+.kpi-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.kpi{background:var(--w);border-radius:12px;padding:14px 16px;border:1px solid var(--b1)}
+.kpi-label{font-size:10px;font-family:'Montserrat',sans-serif;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.kpi-dot{width:8px;height:8px;border-radius:50%}
+.kpi-val{font-family:'Montserrat',sans-serif;font-size:26px;font-weight:800;color:var(--tx)}
+.kpi-sub{font-size:11px;color:var(--mu);margin-top:3px}
+
+/* SECTION TITLE */
+.sec-title{font-size:10px;font-family:'Montserrat',sans-serif;font-weight:700;color:var(--mu);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:10px}
+
+/* VAGAS LIST */
+.vaga-list{display:flex;flex-direction:column;gap:10px}
+.vaga-card{background:var(--w);border-radius:12px;border:1px solid var(--b1);padding:15px 20px;display:flex;align-items:center;gap:14px;cursor:pointer;transition:all .14s}
+.vaga-card:hover{border-color:var(--g);transform:translateY(-1px)}
+.vaga-ico{width:46px;height:46px;border-radius:11px;background:var(--f1);display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0}
+.vaga-titulo{font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--tx);margin-bottom:3px}
+.vaga-meta{font-size:11px;color:var(--mu);display:flex;gap:12px;flex-wrap:wrap}
+.sp{font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;padding:3px 10px;border-radius:20px}
+.sp-ativa{background:var(--f1);color:var(--g2)}
+.sp-enc{background:#f3e8ee;color:var(--pk)}
+.link-publica{background:var(--f1);border:1px solid var(--b1);border-radius:7px;
+  padding:6px 10px;margin-top:7px;display:flex;align-items:center;gap:6px;
+  cursor:pointer;transition:border-color .14s;font-size:11px;color:var(--g2)}
+.link-publica:hover{border-color:var(--g)}
+.link-publica-off{background:#fff8e1;border:1px dashed #c9a800;border-radius:7px;
+  padding:6px 10px;margin-top:7px;font-size:11px;color:#7a5c00;cursor:pointer}
+
+/* KANBAN */
+.kb-wrapper{overflow-x:auto}
+.kb{display:grid;grid-template-columns:repeat(5,minmax(180px,1fr));gap:10px;min-width:900px}
+.kb-col{background:var(--w);border-radius:12px;border:1px solid var(--b1);overflow:hidden;display:flex;flex-direction:column}
+.kb-hdr{padding:10px 12px;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;text-transform:uppercase;letter-spacing:.8px;display:flex;align-items:center;justify-content:space-between;border-bottom:1px solid var(--b1)}
+.kb-cnt{width:20px;height:20px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700}
+.kb-cards{padding:8px;display:flex;flex-direction:column;gap:7px;flex:1;min-height:60px}
+.cc{background:var(--f0);border-radius:9px;padding:10px 11px;border:1.5px solid var(--b1);cursor:pointer;transition:all .14s}
+.cc:hover{border-color:var(--g);transform:translateY(-1px)}
+.cc.sla{border-color:var(--red)!important}
+.cc-name{font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--tx);margin-bottom:2px}
+.cc-sub{font-size:10px;color:var(--mu);margin-bottom:6px}
+.sla-badge{font-size:10px;font-weight:700;color:var(--red);display:flex;align-items:center;gap:3px;margin-top:4px}
+
+/* FORMULÁRIO MODAL */
+.overlay{position:fixed;inset:0;background:rgba(0,0,0,.4);display:none;align-items:center;justify-content:center;z-index:200;padding:20px}
+.overlay.open{display:flex}
+.modal{background:var(--w);border-radius:14px;width:480px;max-height:90vh;overflow-y:auto;box-shadow:0 20px 60px rgba(0,0,0,.2)}
+.mhdr{padding:16px 20px;border-bottom:1px solid var(--b1);display:flex;align-items:center;justify-content:space-between}
+.mtitle{font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--tx)}
+.mclose{width:28px;height:28px;border-radius:6px;border:1px solid var(--b1);background:transparent;cursor:pointer;font-size:16px;color:var(--mu);display:flex;align-items:center;justify-content:center}
+.mbody{padding:18px 20px}
+.mfoot{padding:12px 20px;border-top:1px solid var(--b1);display:flex;gap:8px;justify-content:flex-end}
+.field{margin-bottom:14px}
+.field label{display:block;font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;font-family:'Montserrat',sans-serif;margin-bottom:5px}
+.field input,.field select,.field textarea{width:100%;padding:9px 12px;border:1px solid var(--b1);border-radius:8px;font-size:13px;background:var(--f0);color:var(--tx);font-family:'Lato',sans-serif;resize:none}
+.field input:focus,.field select:focus,.field textarea:focus{outline:none;border-color:var(--g)}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:8px 16px;border-radius:8px;font-size:12px;font-weight:700;cursor:pointer;border:none;font-family:'Montserrat',sans-serif;transition:all .14s}
+.btn-primary{background:var(--g);color:#fff}.btn-primary:hover{background:var(--g2)}
+.btn-pk{background:var(--pk);color:#fff}
+.btn-gh{background:transparent;border:1px solid var(--b2);color:var(--mu)}.btn-gh:hover{border-color:var(--g);color:var(--g)}
+
+/* CANDIDATO MODAL */
+.stage-list{display:flex;flex-direction:column}
+.sr{display:flex;align-items:flex-start;gap:10px;padding:8px 0;border-bottom:1px solid var(--b1)}
+.sr:last-child{border-bottom:none}
+.sd{width:10px;height:10px;border-radius:50%;flex-shrink:0;margin-top:3px}
+.sn{font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--tx)}
+.sdt{font-size:11px;color:var(--mu);margin-top:1px}
+
+/* ONBOARDING */
+.ob-hdr{background:var(--w);border-radius:12px;border:1px solid var(--b1);padding:14px 20px;margin-bottom:14px;display:flex;align-items:center;gap:14px}
+.av{border-radius:50%;display:flex;align-items:center;justify-content:center;font-weight:700;color:#fff;flex-shrink:0;font-family:'Montserrat',sans-serif}
+.pg-track{height:8px;background:var(--b1);border-radius:4px;margin-top:5px}
+.pg-fill{height:100%;background:var(--g);border-radius:4px}
+.ob-cols{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.day-blk{background:var(--w);border-radius:12px;border:1px solid var(--b1);padding:14px}
+.day-lbl{font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;text-transform:uppercase;letter-spacing:.6px;margin-bottom:10px}
+.task{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid var(--b1)}
+.task:last-child{border-bottom:none}
+.tchk{width:17px;height:17px;border-radius:5px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;flex-shrink:0;margin-top:1px;cursor:pointer}
+
+/* TOAST */
+.toast{position:fixed;bottom:24px;right:24px;background:var(--navy2);color:#fff;padding:11px 18px;border-radius:10px;font-size:13px;font-family:'Montserrat',sans-serif;font-weight:600;z-index:999;transform:translateY(80px);opacity:0;transition:all .3s;box-shadow:0 4px 20px rgba(0,0,0,.3)}
+.toast.show{transform:translateY(0);opacity:1}
+
+/* EMPTY */
+.ia-badge{font-size:10px;font-weight:700;margin-top:4px;font-family:'Montserrat',sans-serif}
+.ia-proc{color:var(--mu)}
+.empty{text-align:center;padding:32px;color:var(--mu);font-size:13px}
+.alerta-card{background:var(--w);border-radius:10px;border:1px solid var(--b1);
+  padding:11px 14px;margin-bottom:8px;border-left:3px solid var(--red)}
+.alerta-card.ob{border-left-color:var(--or)}
+.alerta-titulo{font-size:12px;font-weight:700;color:var(--tx);font-family:'Montserrat',sans-serif}
+.alerta-sub{font-size:11px;color:var(--mu);margin-top:2px}
+.alerta-badge{font-size:10px;font-weight:700;color:var(--red);margin-top:4px}
+.email-log-item{background:var(--f0);border-radius:8px;padding:8px 11px;margin-bottom:6px;
+  border-left:3px solid var(--b2);font-size:11px}
+.email-log-item.ok{border-left-color:var(--g)}
+.email-log-item.err{border-left-color:var(--red)}
+.an-tabs{display:flex;gap:3px;background:var(--b1);border-radius:8px;padding:3px;margin-bottom:12px}
+.an-tab{flex:1;padding:6px;border-radius:6px;font-size:11px;font-weight:700;cursor:pointer;
+  color:var(--mu);transition:all .14s;font-family:'Montserrat',sans-serif;text-align:center}
+.an-tab.active{background:var(--w);color:var(--tx);box-shadow:0 1px 4px rgba(0,0,0,.08)}
+.an-content{display:none}.an-content.active{display:block}
+.an-text{font-size:12px;color:var(--tx);line-height:1.75;white-space:pre-wrap;
+  background:var(--f0);border-radius:8px;padding:12px 14px;border:1px solid var(--b1);
+  max-height:180px;overflow-y:auto;margin-bottom:8px}
+.an-link-box{background:#ebf5d6;border-radius:7px;padding:8px 12px;font-size:11px;
+  color:var(--g2);font-family:monospace;display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.empty b{display:block;font-size:15px;font-family:'Montserrat',sans-serif;margin-bottom:6px;color:var(--tx)}
+
+@media(max-width:768px){.kpi-grid{grid-template-columns:repeat(2,1fr)}.ob-cols{grid-template-columns:1fr}}
+
+/* SAFENET DESIGN SYSTEM 2.0 — camada visual compartilhada com a Intranet */
+:root{
+  --verde:#7AC143;--verde-d:#5c9e2e;--laranja:#E8401C;--magenta:#D41B6C;--ciano:#00B5E2;
+  --navy:#164023;--navy-deep:#0d2614;--bg:#f4f7f1;--surface:#fff;--ink:#1a1a1a;--muted:#6B6B6B;
+  --line:#e3ecd9;--line-soft:#eef5e5;--radius:16px;
+  --shadow:0 1px 2px rgba(13,38,20,.04),0 8px 24px rgba(13,38,20,.06);
+  --shadow-hover:0 2px 4px rgba(13,38,20,.06),0 16px 40px rgba(122,193,67,.18);
+  --grad-marca:linear-gradient(90deg,#7AC143 0%,#E8401C 33%,#D41B6C 66%,#00B5E2 100%);
+}
+body{background:var(--bg);color:var(--ink);font-family:'Lato',system-ui,sans-serif;-webkit-font-smoothing:antialiased}
+#login-screen{background:linear-gradient(135deg,#eef5e8 0%,#f8faf6 52%,#edf5f0 100%);position:relative;overflow:hidden}
+#login-screen:before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 20%,rgba(122,193,67,.16),transparent 34%),radial-gradient(circle at 80% 80%,rgba(0,181,226,.10),transparent 30%);pointer-events:none}
+.login-box{position:relative;border:1px solid var(--line);border-radius:20px;padding:38px 40px;box-shadow:0 20px 60px rgba(13,38,20,.12);overflow:hidden}
+.login-box:before{content:"";position:absolute;left:0;right:0;top:0;height:4px;background:var(--grad-marca)}
+.login-logo{margin-bottom:30px}.login-logo-text{font-size:19px;letter-spacing:-.02em}.login-logo-sub{text-transform:uppercase;letter-spacing:.08em;font-size:9px;font-weight:700}
+.form-group select,.form-group input{background:#fbfdf9;border-color:#d8e4d2;border-radius:10px;padding:11px 13px;box-shadow:inset 0 1px 1px rgba(0,0,0,.02)}
+.form-group select:focus,.form-group input:focus{border-color:var(--verde);box-shadow:0 0 0 3px rgba(122,193,67,.14)}
+.btn-login{border-radius:10px;background:var(--verde);box-shadow:0 6px 14px rgba(92,158,46,.20)}
+.btn-login:hover{background:var(--verde-d);transform:translateY(-1px)}
+.topbar{height:64px;padding:0 28px;background:linear-gradient(115deg,var(--navy-deep),var(--navy) 58%,#1e5430);border-bottom:3px solid transparent;border-image:var(--grad-marca) 1;box-shadow:0 4px 18px rgba(13,38,20,.14)}
+.topbar:after{content:"";position:absolute;right:-120px;top:-160px;width:360px;height:360px;background:radial-gradient(circle,rgba(122,193,67,.24),transparent 68%);pointer-events:none}
+.topbar-logo,.topbar-user,.topbar-btn{position:relative;z-index:1}.topbar-title{font-size:14px;letter-spacing:.7px}.topbar-sub{letter-spacing:.04em;text-transform:uppercase}.topbar-btn{border-radius:9px}.btn-g{background:var(--verde)}.btn-g:hover{background:var(--verde-d)}
+.nav-tabs{padding:0 28px;box-shadow:0 1px 4px rgba(13,38,20,.04)}
+.tab{padding:14px 16px}.tab.active{color:var(--verde-d);border-bottom-color:var(--verde)}
+.content{max-width:1200px;padding:28px 28px 40px}
+.kpi-grid{gap:14px}.kpi{border-radius:14px;border-color:var(--line);box-shadow:var(--shadow);padding:16px 18px;transition:transform .15s,box-shadow .15s}.kpi:hover{transform:translateY(-2px);box-shadow:var(--shadow-hover)}
+.vaga-card,.kb-col,.estat-card{border-radius:14px;border-color:var(--line);box-shadow:var(--shadow)}
+.vaga-card:hover{box-shadow:var(--shadow-hover);border-color:var(--verde)}
+.kb-col{overflow:hidden}.kb-hdr{padding:12px 14px}.cc{background:#fbfdf9;border-color:var(--line)}
+button,.btn-login,.topbar-btn{transition:all .15s ease}
+.modal-bg{background:rgba(13,38,20,.52);backdrop-filter:blur(4px)}
+.modal{border:1px solid var(--line);border-radius:18px;box-shadow:0 24px 80px rgba(13,38,20,.22);overflow:hidden}
+.modal-h{background:linear-gradient(115deg,var(--navy-deep),var(--navy));color:#fff;border-bottom:3px solid transparent;border-image:var(--grad-marca) 1;padding:16px 20px;font-family:'Montserrat',sans-serif;font-weight:800}
+.modal-f{background:#fbfdf9;border-top:1px solid var(--line)}
+@media(max-width:768px){.topbar{padding:0 16px}.nav-tabs{padding:0 12px;overflow-x:auto}.content{padding:20px 16px 32px}.login-box{padding:32px 24px}}
+
+.estat-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-bottom:20px}
+.estat-card{background:var(--w);border-radius:12px;border:1px solid var(--b1);padding:14px 16px}
+.estat-title{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;font-family:'Montserrat',sans-serif;margin-bottom:10px}
+.estat-row{display:flex;justify-content:space-between;align-items:center;padding:4px 0;font-size:12px;border-bottom:1px solid var(--b1)}
+.estat-row:last-child{border-bottom:none}
+.estat-val{font-weight:700;font-family:'Montserrat',sans-serif;color:var(--tx)}
+
+/* ── COLABORADORES (Avaliações — Fatia A) ── */
+.colab-card{background:var(--w);border-radius:12px;border:1px solid var(--b1);padding:13px 18px;display:flex;align-items:center;gap:14px;transition:all .14s;box-shadow:var(--shadow)}
+.colab-card:hover{border-color:var(--g);box-shadow:var(--shadow-hover)}
+.colab-card.inativo{opacity:.6}
+.colab-info{flex:1;min-width:0}
+.colab-nome{font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--tx);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.colab-meta{font-size:11px;color:var(--mu);display:flex;gap:10px;flex-wrap:wrap;margin-top:3px}
+.setor-badge{display:inline-block;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;padding:2px 9px;border-radius:20px;white-space:nowrap}
+.sb-op{background:#e6f1fb;color:#2d7bba}.sb-mo{background:#ebf5d6;color:var(--g2)}
+.sb-pr{background:#f3e8f9;color:#7b3fa5}.sb-ti{background:#e8f8fc;color:#1a7fa0}
+.sb-ad{background:#fff3e0;color:#b05800}.sb-li{background:#fde8ee;color:var(--pk)}
+.vinculo-badge{display:inline-block;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;padding:2px 8px;border-radius:20px;background:var(--f1);color:var(--g2)}
+.colab-list{display:flex;flex-direction:column;gap:8px}
+
+/* ── SUB-NAVEGAÇÃO (Avaliações) ── */
+.av-subnav{display:flex;gap:6px;margin-bottom:18px;border-bottom:2px solid var(--b1);padding-bottom:0}
+.av-subbtn{background:none;border:none;padding:8px 18px;font-size:12px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--mu);cursor:pointer;border-bottom:2px solid transparent;margin-bottom:-2px;border-radius:0;transition:all .14s}
+.av-subbtn:hover{color:var(--g2)}
+.av-subbtn.active{color:var(--g2);border-bottom-color:var(--g)}
+
+/* ── CRITÉRIOS TÉCNICOS ── */
+.crit-setor-bloco{background:var(--w);border-radius:12px;border:1px solid var(--b1);margin-bottom:14px;overflow:hidden}
+.crit-setor-hdr{display:flex;align-items:center;justify-content:space-between;padding:10px 16px;background:var(--f1);border-bottom:1px solid var(--b1)}
+.crit-setor-nome{font-size:11px;font-weight:800;font-family:'Montserrat',sans-serif;text-transform:uppercase;letter-spacing:.6px}
+.crit-setor-count{font-size:11px;color:var(--mu);font-family:'Montserrat',sans-serif}
+.crit-row{display:flex;align-items:center;gap:12px;padding:9px 16px;border-bottom:1px solid var(--b1);font-size:12px;transition:background .1s}
+.crit-row:last-child{border-bottom:none}
+.crit-row:hover{background:var(--f1)}
+.crit-row.inativo{opacity:.5}
+.crit-num{width:24px;height:24px;border-radius:50%;background:var(--b1);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--mu);flex-shrink:0}
+.crit-desc{flex:1;color:var(--tx)}
+.crit-tag{font-size:10px;font-weight:600;font-family:'Montserrat',sans-serif;color:var(--mu);background:var(--b1);padding:2px 8px;border-radius:20px;white-space:nowrap}
+
+/* ── CICLOS DE AVALIAÇÃO ── */
+.ciclo-card{background:var(--w);border-radius:10px;border:1px solid var(--b1);padding:12px 16px;display:flex;align-items:center;gap:12px;margin-bottom:8px;box-shadow:var(--shadow)}
+.ciclo-status{display:inline-block;font-size:10px;font-weight:800;font-family:'Montserrat',sans-serif;padding:3px 10px;border-radius:20px;white-space:nowrap;flex-shrink:0}
+.cs-pendente{background:#fff3cd;color:#856404}
+.cs-em_andamento{background:#d1ecf1;color:#0c5460}
+.cs-encerrado{background:#d4edda;color:#155724}
+.cs-cancelado{background:#f8d7da;color:#721c24}
+
+/* ── RESULTADO DO CICLO (Fatia E) ── */
+.res-header{text-align:center;padding:16px 0 20px;border-bottom:1px solid var(--b1);margin-bottom:20px}
+.res-nome{font-size:15px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--tx)}
+.res-sub{font-size:11px;color:var(--mu);margin-top:4px}
+.res-nota-big{font-size:40px;font-weight:800;font-family:'Montserrat',sans-serif;margin:10px 0 4px;line-height:1}
+.res-classif{font-size:14px;font-weight:700;font-family:'Montserrat',sans-serif}
+.res-medias{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:20px}
+.res-media-card{background:var(--f1);border-radius:8px;padding:12px 14px;border:1px solid var(--b1)}
+.res-media-titulo{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.res-barra-row{display:flex;align-items:center;gap:8px;margin-bottom:5px;font-size:11px}
+.res-barra-label{width:60px;color:var(--mu);flex-shrink:0;text-align:right}
+.res-barra-track{flex:1;background:var(--b1);border-radius:4px;height:8px;overflow:hidden}
+.res-barra-fill{height:100%;border-radius:4px;transition:width .4s}
+.res-barra-val{width:28px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--tx);flex-shrink:0}
+.res-crit-lista{margin-bottom:20px}
+.res-crit-row{display:flex;align-items:center;gap:8px;padding:7px 0;border-bottom:1px solid var(--b1);font-size:11px}
+.res-crit-row:last-child{border-bottom:none}
+.res-crit-desc{flex:1;color:var(--tx)}
+.nota-chip{display:inline-block;width:24px;height:24px;border-radius:50%;text-align:center;line-height:24px;font-size:11px;font-weight:800;font-family:'Montserrat',sans-serif;flex-shrink:0}
+.nc-auto{background:#e8f5d6;color:#2d6a0a}
+.nc-aval{background:#d6e8f5;color:#1a5a8a}
+.nc-sup{background:#f5e8d6;color:#8a4a1a}
+.nc-final{background:#0D2614;color:#fff}
+.res-feedback{background:var(--f1);border-radius:8px;padding:14px;margin-top:4px;border:1px solid var(--b1)}
+.res-feedback-titulo{font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px}
+.res-feedback-secao{font-size:12px;margin-bottom:8px}
+.res-feedback-secao b{display:block;font-size:10px;color:var(--mu);text-transform:uppercase;letter-spacing:.3px;margin-bottom:3px}
+
+/* ── ACOMPANHAMENTO (Fatia G) ── */
+.acomp-row{background:var(--w);border-radius:10px;border:1px solid var(--b1);padding:12px 16px;display:grid;grid-template-columns:40px 1fr auto;gap:12px;align-items:center;margin-bottom:8px;box-shadow:var(--shadow);transition:border-color .14s}
+.acomp-row:hover{border-color:var(--g)}
+.acomp-nome{font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--tx)}
+.acomp-meta{font-size:11px;color:var(--mu);margin-top:2px;display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.acomp-direita{display:flex;flex-direction:column;align-items:flex-end;gap:5px;min-width:160px}
+.acomp-hist{display:flex;gap:3px}
+.hist-dot{width:10px;height:10px;border-radius:50%;flex-shrink:0;cursor:default}
+.hd-enc-5{background:#2d6a0a}.hd-enc-4{background:#4a7a2a}.hd-enc-3{background:#856404}.hd-enc-2{background:#a04000}.hd-enc-1{background:#a00000}
+.hd-pend{background:#dee2e6}.hd-and{background:#d1ecf1}
+.prox-badge{display:inline-block;font-size:10px;font-weight:700;font-family:'Montserrat',sans-serif;padding:2px 8px;border-radius:20px;background:#fff3cd;color:#856404;border:1px solid #ffc107}
+.prox-badge.urgente{background:#fde8e8;color:#721c24;border-color:#f5b8b8}
+.setor-kpi{background:var(--w);border:1px solid var(--b1);border-radius:8px;padding:8px 14px;font-size:11px;display:flex;flex-direction:column;align-items:center;gap:2px;min-width:100px}
+.setor-kpi-nome{font-weight:700;font-family:'Montserrat',sans-serif;font-size:10px;text-transform:uppercase;letter-spacing:.4px;color:var(--mu)}
+.setor-kpi-media{font-size:18px;font-weight:800;font-family:'Montserrat',sans-serif}
+.fit-badge{font-size:10px;font-weight:700;color:#b05800;background:#fff3e0;border:1px solid #f5c08a;border-radius:6px;padding:3px 8px;margin-top:4px;display:inline-block}
+.ciclo-info{flex:1;min-width:0}
+.ciclo-nome{font-size:13px;font-weight:700;font-family:'Montserrat',sans-serif;color:var(--tx)}
+.ciclo-meta{font-size:11px;color:var(--mu);margin-top:3px}
+</style>
+</head>
+<body>
+
+<!-- ════ TELA DE LOGIN ════ -->
+<div id="login-screen">
+  <div class="login-box">
+    <div class="login-logo">
+      <img src="/static/logo_safenet.png" onerror="this.style.display='none'" alt="Safenet">
+      <div>
+        <div class="login-logo-text">Gestor de RH</div>
+        <div class="login-logo-sub">Safenet Tecnologia</div>
+      </div>
+    </div>
+
+    <!-- Selecionar usuário -->
+    <div id="selecao-form">
+      <div class="form-group">
+        <label>Selecione seu usuário</label>
+        <select id="sel-usuario"><option value="">Carregando...</option></select>
+      </div>
+      <button class="btn-login" onclick="irParaSenha()">Continuar →</button>
+    </div>
+
+    <!-- Senha / definir senha -->
+    <div id="definir-senha-form">
+      <p style="font-size:13px;color:var(--mu);margin-bottom:16px">
+        Primeiro acesso — defina sua senha:
+      </p>
+      <div class="form-group"><label>Nova senha (mín. 6 caracteres)</label>
+        <input type="password" id="inp-nova-senha" placeholder="••••••">
+      </div>
+      <div class="form-group"><label>Confirmar senha</label>
+        <input type="password" id="inp-conf-senha" placeholder="••••••">
+      </div>
+      <button class="btn-login" onclick="definirSenha()">Definir senha e entrar</button>
+      <p style="text-align:center;margin-top:10px"><a href="#" onclick="voltarSelecao()" style="font-size:12px;color:var(--mu)">← Voltar</a></p>
+    </div>
+
+    <div id="senha-form" style="display:none">
+      <div class="form-group"><label>Senha</label>
+        <input type="password" id="inp-senha" placeholder="••••••" onkeydown="if(event.key==='Enter')fazerLogin()">
+      </div>
+      <button class="btn-login" onclick="fazerLogin()">Entrar</button>
+      <p style="text-align:center;margin-top:10px"><a href="#" onclick="voltarSelecao()" style="font-size:12px;color:var(--mu)">← Voltar</a></p>
+    </div>
+
+    <div class="login-err" id="login-err"></div>
+  </div>
+</div>
+
+<!-- ════ APP ════ -->
+<div id="app" style="display:none;flex-direction:column">
+  <div class="topbar">
+    <a href="/" class="topbar-logo" title="Hub da intranet">
+      <img src="/static/logo_safenet.png" onerror="this.style.display='none'" alt="Safenet">
+      <div>
+        <div class="topbar-title">GESTOR DE RH</div>
+        <div class="topbar-sub">Safenet Tecnologia</div>
+      </div>
+    </a>
+    <div class="app-breadcrumb" style="position:relative;z-index:1;font-size:11px;color:rgba(255,255,255,.55);padding-left:4px">Intranet <span style="opacity:.45">›</span> RH <span style="opacity:.45">›</span> <b style="color:#fff">Gestor de RH</b></div>
+    <div class="topbar-spacer"></div>
+    <span class="topbar-user" id="topbar-user"></span>
+    <button class="topbar-btn btn-g" onclick="abrirModalVaga()" id="btn-nova-vaga" style="display:none">＋ Nova vaga</button>
+    <a class="topbar-btn btn-ghost" href="/" title="Voltar para a Intranet">← Intranet</a>
+    <button class="topbar-btn btn-ghost" onclick="fazerLogout()">Sair</button>
+  </div>
+
+  <div class="nav-tabs">
+    <div class="tab active" data-tab="painel" onclick="trocarTab(this)">Painel</div>
+    <div class="tab" data-tab="vagas" onclick="trocarTab(this)">Vagas</div>
+    <div class="tab" data-tab="kanban" onclick="trocarTab(this)">Kanban</div>
+    <div class="tab" data-tab="onboarding" onclick="trocarTab(this)">Onboarding</div>
+    <div class="tab" data-tab="banco" onclick="trocarTab(this)">Banco de Talentos</div>
+    <div class="tab" data-tab="alertas" onclick="trocarTab(this)" id="tab-alertas-btn">Alertas <span id="alertas-badge" style="display:none;background:var(--red);color:#fff;font-size:9px;font-weight:700;padding:1px 5px;border-radius:10px;margin-left:4px">0</span></div>
+    <div class="tab" data-tab="avaliacoes" onclick="trocarTab(this)">Avaliações</div>
+    <div class="tab" data-tab="estatisticas" onclick="trocarTab(this)">Estatísticas</div>
+  </div>
+
+  <div class="content">
+
+    <!-- PAINEL -->
+    <div class="screen active" id="tab-painel">
+      <div class="kpi-grid" id="kpi-grid">
+        <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--bl)"></span>Vagas abertas</div><div class="kpi-val" id="kpi-vagas">–</div><div class="kpi-sub" id="kpi-vagas-sub">–</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--g)"></span>Candidatos ativos</div><div class="kpi-val" id="kpi-cands">–</div><div class="kpi-sub">Em processo</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--red)"></span>SLA estourado</div><div class="kpi-val" id="kpi-sla">–</div><div class="kpi-sub">Aguardando ação</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--or)"></span>Em onboarding</div><div class="kpi-val" id="kpi-ob">–</div><div class="kpi-sub">Primeiros 30 dias</div></div>
+      </div>
+      <div class="sec-title">Vagas ativas</div>
+      <div id="painel-vagas" class="vaga-list"></div>
+    </div>
+
+    <!-- VAGAS -->
+    <div class="screen" id="tab-vagas">
+      <div id="vagas-list" class="vaga-list"></div>
+    </div>
+
+    <!-- KANBAN -->
+    <div class="screen" id="tab-kanban">
+      <div style="margin-bottom:12px;display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+        <span class="sec-title" style="margin:0">Vaga:</span>
+        <select id="kb-sel-vaga" onchange="renderKanban()" style="padding:6px 10px;border-radius:8px;border:1px solid var(--b2);font-size:13px;background:var(--w)"><option value="">Selecione...</option></select>
+      </div>
+      <div class="kb-wrapper"><div class="kb" id="kb-board"></div></div>
+    </div>
+
+    <!-- ONBOARDING -->
+    <div class="screen" id="tab-onboarding">
+      <div id="ob-list"></div>
+    </div>
+
+    <!-- ALERTAS SLA + E-MAIL -->
+    <div class="screen" id="tab-alertas">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:16px">
+        <div>
+          <div class="sec-title">SLA — Itens atrasados</div>
+          <div id="sla-list"></div>
+        </div>
+        <div>
+          <div class="sec-title" style="display:flex;align-items:center;justify-content:space-between">
+            Log de e-mails
+            <button onclick="forcarSLA()" style="font-size:10px;background:none;border:1px solid var(--b2);border-radius:6px;padding:3px 8px;cursor:pointer;color:var(--mu)">↺ Forçar scan SLA</button>
+          </div>
+          <div id="email-log-list"></div>
+        </div>
+      </div>
+    </div>
+
+    <!-- BANCO DE TALENTOS -->
+    <div class="screen" id="tab-banco">
+      <div style="display:flex;gap:8px;margin-bottom:14px;flex-wrap:wrap;align-items:center">
+        <input type="text" id="banco-filtro-cargo" placeholder="Filtrar por cargo..." oninput="carregarBanco()"
+          style="padding:7px 12px;border:1px solid var(--b1);border-radius:8px;font-size:13px;background:var(--w);width:200px">
+        <input type="number" id="banco-filtro-pts" placeholder="Pontuação mín. IA" oninput="carregarBanco()" min="0" max="100"
+          style="padding:7px 12px;border:1px solid var(--b1);border-radius:8px;font-size:13px;background:var(--w);width:160px">
+        <span id="banco-total" style="font-size:12px;color:var(--mu);margin-left:auto"></span>
+      </div>
+      <div id="banco-list" class="vaga-list"></div>
+    </div>
+
+    <!-- AVALIAÇÕES DE DESEMPENHO — Fatia B: Colaboradores + Critérios -->
+    <div class="screen" id="tab-avaliacoes">
+      <!-- Sub-navegação interna -->
+      <div class="av-subnav">
+        <button class="av-subbtn active" id="av-sub-colab"  onclick="trocarSubAv('colaboradores')">👥 Colaboradores</button>
+        <button class="av-subbtn"        id="av-sub-crit"   onclick="trocarSubAv('criterios')">🎯 Critérios Técnicos</button>
+        <button class="av-subbtn"        id="av-sub-ciclos" onclick="trocarSubAv('ciclos')">📋 Ciclos</button>
+        <button class="av-subbtn"        id="av-sub-acomp"  onclick="trocarSubAv('acompanhamento')">📈 Acompanhamento</button>
+      </div>
+
+      <!-- SUB-TELA: COLABORADORES -->
+      <div id="av-sub-colaboradores">
+      <!-- KPIs -->
+      <div class="kpi-grid" id="av-kpi-grid" style="grid-template-columns:repeat(4,1fr)">
+        <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--bl)"></span>Total cadastrados</div><div class="kpi-val" id="av-kpi-total">–</div><div class="kpi-sub">na base de avaliação</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--g)"></span>Ativos</div><div class="kpi-val" id="av-kpi-ativos">–</div><div class="kpi-sub">em avaliação</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--or)"></span>Setores</div><div class="kpi-val" id="av-kpi-setores">–</div><div class="kpi-sub">representados</div></div>
+        <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--mu)"></span>Desligados</div><div class="kpi-val" id="av-kpi-inativos">–</div><div class="kpi-sub">histórico preservado</div></div>
+      </div>
+
+      <!-- Toolbar -->
+      <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+        <div class="sec-title" style="margin:0">Colaboradores</div>
+        <select id="av-filtro-setor" onchange="carregarColaboradores()"
+          style="padding:6px 10px;border-radius:8px;border:1px solid var(--b2);font-size:12px;background:var(--w)">
+          <option value="">Todos os setores</option>
+          <option>Operacional</option><option>Monitoramento</option>
+          <option>Projetos</option><option>TI</option>
+          <option>Administrativo</option><option>Licitação</option>
+        </select>
+        <select id="av-filtro-ativo" onchange="carregarColaboradores()"
+          style="padding:6px 10px;border-radius:8px;border:1px solid var(--b2);font-size:12px;background:var(--w)">
+          <option value="">Ativos e desligados</option>
+          <option value="true">Somente ativos</option>
+          <option value="false">Somente desligados</option>
+        </select>
+        <span id="av-total-label" style="font-size:12px;color:var(--mu);margin-left:4px"></span>
+        <div style="flex:1"></div>
+        <button class="btn btn-primary" id="av-btn-novo" onclick="abrirModalColaborador(null)" style="display:none">＋ Novo colaborador</button>
+      </div>
+
+      <!-- Lista -->
+      <div id="av-colab-list"></div>
+      </div><!-- /av-sub-colaboradores -->
+
+      <!-- SUB-TELA: CRITÉRIOS TÉCNICOS -->
+      <div id="av-sub-criterios" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+          <div class="sec-title" style="margin:0">Critérios Técnicos por Setor</div>
+          <select id="crit-filtro-setor" onchange="carregarCriterios()"
+            style="padding:6px 10px;border-radius:8px;border:1px solid var(--b2);font-size:12px;background:var(--w)">
+            <option value="">Todos os setores</option>
+            <option>Operacional</option><option>Monitoramento</option>
+            <option>Projetos</option><option>TI</option>
+            <option>Administrativo</option><option>Licitação</option>
+          </select>
+          <label style="display:flex;align-items:center;gap:6px;font-size:12px;color:var(--mu)">
+            <input type="checkbox" id="crit-mostrar-inativos" onchange="carregarCriterios()"> Mostrar inativos
+          </label>
+          <div style="flex:1"></div>
+          <button class="btn btn-primary" id="av-btn-novo-crit" onclick="abrirModalCriterio(null)" style="display:none">＋ Novo critério</button>
+        </div>
+        <div id="av-crit-list"></div>
+      </div><!-- /av-sub-criterios -->
+
+      <!-- SUB-TELA: CICLOS -->
+      <div id="av-sub-ciclos-content" style="display:none">
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:16px;flex-wrap:wrap">
+          <div class="sec-title" style="margin:0">Ciclos de Avaliação</div>
+          <select id="ciclo-filtro-status" onchange="carregarCiclos()"
+            style="padding:6px 10px;border-radius:8px;border:1px solid var(--b2);font-size:12px;background:var(--w)">
+            <option value="">Todos os status</option>
+            <option value="pendente">Pendente</option>
+            <option value="em_andamento">Em andamento</option>
+            <option value="encerrado">Encerrado</option>
+            <option value="cancelado">Cancelado</option>
+          </select>
+          <span id="ciclos-total-label" style="font-size:12px;color:var(--mu)"></span>
+        </div>
+        <div id="av-ciclos-list"></div>
+
+        <!-- Painel de automação -->
+        <div style="margin-top:24px;border-top:1px solid var(--b1);padding-top:16px" id="av-gatilhos-bloco">
+          <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px">
+            <div style="font-size:11px;font-weight:800;color:var(--mu);text-transform:uppercase;letter-spacing:.5px">🤖 Automação de gatilhos</div>
+            <button class="btn btn-gh" id="btn-rodar-gatilhos" onclick="rodarGatilhos()" style="display:none;font-size:11px;padding:4px 12px">▶ Rodar agora</button>
+            <button class="btn btn-gh" onclick="carregarLogGatilhos()" style="font-size:11px;padding:4px 12px">↻ Log</button>
+          </div>
+          <div id="av-gatilhos-log" style="font-size:11px;color:var(--mu)">Clique em Log para ver o histórico de disparos automáticos.</div>
+        </div>
+      </div><!-- /av-sub-ciclos -->
+
+      <!-- SUB-TELA: ACOMPANHAMENTO -->
+      <div id="av-sub-acompanhamento" style="display:none">
+
+        <!-- KPIs empresa -->
+        <div class="kpi-grid" id="acomp-kpi-grid" style="grid-template-columns:repeat(3,1fr);margin-bottom:20px">
+          <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--bl)"></span>Colaboradores ativos</div><div class="kpi-val" id="acomp-k-ativos">–</div><div class="kpi-sub">na base de avaliação</div></div>
+          <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--g)"></span>Média da empresa</div><div class="kpi-val" id="acomp-k-media">–</div><div class="kpi-sub" id="acomp-k-classif">últimos 12 meses</div></div>
+          <div class="kpi"><div class="kpi-label"><span class="kpi-dot" style="background:var(--or)"></span>Sem ciclo ativo</div><div class="kpi-val" id="acomp-k-semciclo">–</div><div class="kpi-sub">aguardam próximo disparo</div></div>
+        </div>
+
+        <!-- Por setor -->
+        <div id="acomp-setores" style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:20px"></div>
+
+        <!-- Toolbar colaboradores -->
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap">
+          <div class="sec-title" style="margin:0">Colaboradores</div>
+          <select id="acomp-filtro-setor" onchange="carregarAcompanhamento()"
+            style="padding:6px 10px;border-radius:8px;border:1px solid var(--b2);font-size:12px;background:var(--w)">
+            <option value="">Todos os setores</option>
+            <option>Operacional</option><option>Monitoramento</option>
+            <option>Projetos</option><option>TI</option>
+            <option>Administrativo</option><option>Licitação</option>
+          </select>
+          <span id="acomp-total-label" style="font-size:12px;color:var(--mu)"></span>
+        </div>
+
+        <div id="acomp-colab-lista"></div>
+      </div><!-- /av-sub-acompanhamento -->
+
+    </div><!-- /tab-avaliacoes -->
+
+    <!-- ESTATÍSTICAS -->
+    <div class="screen" id="tab-estatisticas">
+      <div id="estat-content"></div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"></div>
+
+<!-- MODAL ANÚNCIO -->
+<div class="overlay" id="ov-anuncio" onclick="fecharOverlay('ov-anuncio',event)">
+  <div class="modal" style="width:560px" onclick="event.stopPropagation()">
+    <div class="mhdr">
+      <div><div class="mtitle" id="an-titulo">Anúncio da vaga</div>
+      <div style="font-size:11px;color:var(--mu)" id="an-sub">Gerado pela IA · revise e copie para os canais</div></div>
+      <button class="mclose" onclick="fecharOverlay('ov-anuncio')">✕</button>
+    </div>
+    <div class="mbody">
+      <div id="an-loading" style="text-align:center;padding:20px;color:var(--mu);font-size:13px;display:none">
+        ⏳ IA gerando os textos... aguarde alguns segundos.
+        <br><button onclick="recarregarAnuncio()" style="margin-top:10px;background:none;border:none;color:var(--g);cursor:pointer;font-weight:700">↺ Atualizar</button>
+      </div>
+      <div id="an-sem-texto" style="background:#fff8e1;border-radius:9px;padding:12px 14px;font-size:12px;color:#7a5c00;margin-bottom:12px;display:none">
+        ⚠ Vaga sem link público ativo. Ative o formulário de candidatura primeiro.
+      </div>
+      <div id="an-painel" style="display:none">
+        <div class="an-tabs">
+          <div class="an-tab active" onclick="swAnTab(this,'li')">LinkedIn</div>
+          <div class="an-tab" onclick="swAnTab(this,'rv')">RioVagas</div>
+          <div class="an-tab" onclick="swAnTab(this,'ig')">Instagram</div>
+        </div>
+        <div class="an-content active" id="an-li">
+          <div class="an-text" id="an-text-li"></div>
+          <div class="an-link-box"><span>🔗</span><a id="an-link-li" target="_blank" rel="noopener" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--g2);text-decoration:none;font-size:12px"></a></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" onclick="copiarAnuncio('li')">📋 Copiar</button>
+            <button class="btn btn-gh btn-sm" onclick="editarAnuncio('li')">✏ Editar</button>
+          </div>
+        </div>
+        <div class="an-content" id="an-rv">
+          <div class="an-text" id="an-text-rv"></div>
+          <div class="an-link-box"><span>🔗</span><a id="an-link-rv" target="_blank" rel="noopener" style="flex:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:var(--g2);text-decoration:none;font-size:12px"></a></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" onclick="copiarAnuncio('rv')">📋 Copiar</button>
+            <button class="btn btn-gh btn-sm" onclick="editarAnuncio('rv')">✏ Editar</button>
+          </div>
+        </div>
+        <div class="an-content" id="an-ig">
+          <div class="an-text" id="an-text-ig"></div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary btn-sm" onclick="copiarAnuncio('ig')">📋 Copiar</button>
+            <button class="btn btn-gh btn-sm" onclick="editarAnuncio('ig')">✏ Editar</button>
+          </div>
+        </div>
+        <div style="margin-top:12px;text-align:right;font-size:11px;color:var(--mu)" id="an-gerado-em"></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-gh" onclick="fecharOverlay('ov-anuncio')">Fechar</button>
+      <button class="btn btn-gh" id="an-btn-regerar" onclick="gerarAnuncio()" style="color:var(--bl);border-color:var(--bl)">↺ Regerar com IA</button>
+      <button class="btn btn-primary" id="an-btn-gerar" onclick="gerarAnuncio()">🤖 Gerar com IA</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL COLABORADOR (novo / editar) -->
+<div class="overlay" id="ov-colaborador" onclick="fecharOverlay('ov-colaborador',event)">
+  <div class="modal" style="width:520px" onclick="event.stopPropagation()">
+    <div class="mhdr">
+      <span class="mtitle" id="colab-modal-titulo">Novo colaborador</span>
+      <button class="mclose" onclick="fecharOverlay('ov-colaborador')">✕</button>
+    </div>
+    <div class="mbody">
+      <input type="hidden" id="colab-id">
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field" style="grid-column:1/-1"><label>Nome completo *</label>
+          <input type="text" id="colab-nome" placeholder="Nome completo"></div>
+        <div class="field"><label>Cargo *</label>
+          <input type="text" id="colab-cargo" placeholder="Ex.: Auxiliar Técnico I"></div>
+        <div class="field"><label>Setor *</label>
+          <select id="colab-setor">
+            <option value="">Selecione...</option>
+            <option>Operacional</option><option>Monitoramento</option>
+            <option>Projetos</option><option>TI</option>
+            <option>Administrativo</option><option>Licitação</option>
+          </select></div>
+        <div class="field"><label>E-mail corporativo *</label>
+          <input type="email" id="colab-email" placeholder="nome@safenettecnologia.com.br"></div>
+        <div class="field"><label>Data de admissão *</label>
+          <input type="date" id="colab-admissao"></div>
+        <div class="field"><label>Vínculo *</label>
+          <select id="colab-vinculo">
+            <option value="">Selecione...</option>
+            <option value="CLT">CLT</option>
+            <option value="PJ">PJ</option>
+            <option value="Estagiário">Estagiário</option>
+          </select></div>
+        <div class="field"><label>Avaliador principal *</label>
+          <select id="colab-avaliador">
+            <option value="">Carregando...</option>
+          </select></div>
+        <div class="field" id="colab-field-supervisor"><label>Supervisor de campo</label>
+          <select id="colab-supervisor">
+            <option value="0">Não se aplica</option>
+          </select>
+          <div style="font-size:10px;color:var(--mu);margin-top:3px">Apenas para técnicos/auxiliares do Operacional</div>
+        </div>
+        <div class="field" id="colab-field-ativo" style="display:none">
+          <label>Status</label>
+          <select id="colab-ativo">
+            <option value="true">Ativo</option>
+            <option value="false">Desligado</option>
+          </select>
+        </div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-gh" onclick="fecharOverlay('ov-colaborador')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarColaborador()">Salvar colaborador</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL RESULTADO DO CICLO -->
+<div class="overlay" id="ov-resultado" onclick="fecharOverlay('ov-resultado',event)">
+  <div class="modal" style="width:620px;max-height:90vh;overflow-y:auto" onclick="event.stopPropagation()">
+    <div class="mhdr">
+      <span class="mtitle">📊 Resultado da Avaliação</span>
+      <button class="mclose" onclick="fecharOverlay('ov-resultado')">✕</button>
+    </div>
+    <div class="mbody" id="resultado-body">
+      <div style="text-align:center;padding:32px;color:var(--mu)">Carregando…</div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CICLO (disparar avaliação) -->
+<div class="overlay" id="ov-ciclo" onclick="fecharOverlay('ov-ciclo',event)">
+  <div class="modal" style="width:460px" onclick="event.stopPropagation()">
+    <div class="mhdr">
+      <span class="mtitle">⚡ Disparar avaliação</span>
+      <button class="mclose" onclick="fecharOverlay('ov-ciclo')">✕</button>
+    </div>
+    <div class="mbody">
+      <input type="hidden" id="ciclo-colab-id">
+      <div style="background:var(--f1);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px">
+        <b id="ciclo-colab-nome"></b>
+        <div style="font-size:11px;color:var(--mu)" id="ciclo-colab-info"></div>
+      </div>
+      <div class="field"><label>Tipo de avaliação *</label>
+        <select id="ciclo-tipo">
+          <option value="">Selecione...</option>
+          <option value="experiencia_1">Avaliação de Experiência — 35º dia</option>
+          <option value="experiencia_2">Avaliação de Experiência — 80º dia</option>
+          <option value="semestral">Avaliação Semestral</option>
+        </select>
+      </div>
+      <div class="field"><label>Prazo para preenchimento *</label>
+        <input type="date" id="ciclo-prazo">
+      </div>
+      <div class="field">
+        <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+          <input type="checkbox" id="ciclo-enviar-email" checked>
+          Enviar e-mail ao colaborador com o link
+        </label>
+        <div style="font-size:10px;color:var(--mu);margin-top:4px">
+          O e-mail é enviado para o endereço cadastrado no perfil do colaborador.
+        </div>
+      </div>
+      <!-- Link gerado após criação -->
+      <div id="ciclo-link-gerado" style="display:none;margin-top:8px">
+        <div style="font-size:11px;font-weight:700;color:var(--g2);margin-bottom:6px">
+          ✅ Ciclo criado! Link de autoavaliação:
+        </div>
+        <div style="display:flex;gap:6px;align-items:center">
+          <input type="text" id="ciclo-link-url" readonly
+            style="flex:1;font-size:11px;padding:6px 8px;border-radius:6px;border:1px solid var(--b2);background:var(--f1);color:var(--tx)">
+          <button class="btn btn-gh" style="font-size:11px;padding:6px 10px;flex-shrink:0"
+            onclick="copiarLink()">📋 Copiar</button>
+        </div>
+        <div id="ciclo-email-status" style="font-size:11px;color:var(--mu);margin-top:6px"></div>
+      </div>
+    </div>
+    <div class="mfoot" id="ciclo-modal-foot">
+      <button class="btn btn-gh" onclick="fecharOverlay('ov-ciclo')">Cancelar</button>
+      <button class="btn btn-primary" onclick="dispararCiclo()">⚡ Disparar avaliação</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL CRITÉRIO (novo / editar) -->
+<div class="overlay" id="ov-criterio" onclick="fecharOverlay('ov-criterio',event)">
+  <div class="modal" style="width:480px" onclick="event.stopPropagation()">
+    <div class="mhdr">
+      <span class="mtitle" id="crit-modal-titulo">Novo critério</span>
+      <button class="mclose" onclick="fecharOverlay('ov-criterio')">✕</button>
+    </div>
+    <div class="mbody">
+      <input type="hidden" id="crit-id">
+      <div class="field"><label>Setor *</label>
+        <select id="crit-setor">
+          <option value="">Selecione...</option>
+          <option>Operacional</option><option>Monitoramento</option>
+          <option>Projetos</option><option>TI</option>
+          <option>Administrativo</option><option>Licitação</option>
+        </select>
+      </div>
+      <div class="field"><label>Descrição do critério *</label>
+        <textarea id="crit-descricao" rows="3" style="resize:vertical"
+          placeholder="Ex.: Execução técnica (qualidade das instalações e manutenções)"></textarea>
+      </div>
+      <div class="field"><label>Aplicável a <span style="font-weight:400;color:var(--mu)">(deixe vazio = todos do setor)</span></label>
+        <input type="text" id="crit-aplicavel" placeholder="Ex.: Técnico, Instalador">
+        <div style="font-size:10px;color:var(--mu);margin-top:3px">Separe por vírgula se houver mais de um</div>
+      </div>
+      <div class="field" id="crit-field-ativo" style="display:none">
+        <label>Status</label>
+        <select id="crit-ativo">
+          <option value="true">Ativo</option>
+          <option value="false">Inativo</option>
+        </select>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-gh" onclick="fecharOverlay('ov-criterio')">Cancelar</button>
+      <button class="btn btn-primary" onclick="salvarCriterio()">Salvar critério</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVA VAGA -->
+<div class="overlay" id="ov-vaga" onclick="fecharOverlay('ov-vaga',event)">
+  <div class="modal" style="width:540px" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mtitle">Nova vaga</span><button class="mclose" onclick="fecharOverlay('ov-vaga')">✕</button></div>
+    <div class="mbody">
+      <!-- SELECT DO CATÁLOGO (Fatia 10) -->
+      <div class="field"><label>Cargo *</label>
+        <select id="vaga-cargo-id" onchange="selecionarCargo(this.value)" style="margin-bottom:6px">
+          <option value="">Selecione do catálogo…</option>
+          <option value="_outro">Outro cargo (digitar)</option>
+        </select>
+        <input type="text" id="vaga-cargo" placeholder="Nome do cargo" style="display:none">
+      </div>
+      <!-- Painel de informações do cargo selecionado -->
+      <div id="vaga-cargo-info" style="display:none;background:var(--f1);border:1px solid var(--b1);border-radius:8px;padding:10px 14px;margin-bottom:12px;font-size:12px">
+        <div id="vci-salario" style="font-weight:700;color:var(--tx);margin-bottom:4px"></div>
+        <div id="vci-beneficios" style="color:var(--mu)"></div>
+        <div id="vci-horario" style="color:var(--mu);margin-top:2px"></div>
+      </div>
+      <div class="field"><label>Solicitante *</label><input type="text" id="vaga-solicitante" placeholder="Seu nome"></div>
+      <div class="field"><label>Requisitos eliminatórios (um por linha)</label><textarea id="vaga-req" rows="3" placeholder="CNH B&#10;Exp. em CFTV&#10;Formação técnica"></textarea></div>
+      <div class="field"><label>Diferenciais (um por linha)</label><textarea id="vaga-dif" rows="2" placeholder="Certificação Hikvision&#10;NR35"></textarea></div>
+      <div class="field"><label>Observações</label><textarea id="vaga-obs" rows="2"></textarea></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-gh" onclick="fecharOverlay('ov-vaga')">Cancelar</button>
+      <button class="btn btn-primary" onclick="criarVaga()">Criar vaga</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL APROVAÇÃO COM NÍVEL (Fatia 10) -->
+<div class="overlay" id="ov-aprovar-nivel" onclick="fecharOverlay('ov-aprovar-nivel',event)">
+  <div class="modal" style="width:420px" onclick="event.stopPropagation()">
+    <div class="mhdr">
+      <span class="mtitle">✅ Aprovar candidato</span>
+      <button class="mclose" onclick="fecharOverlay('ov-aprovar-nivel')">✕</button>
+    </div>
+    <div class="mbody">
+      <input type="hidden" id="aprov-vid">
+      <input type="hidden" id="aprov-cid">
+      <div style="background:var(--f1);border-radius:8px;padding:10px 14px;margin-bottom:16px;font-size:13px">
+        <b id="aprov-nome"></b>
+        <div style="font-size:11px;color:var(--mu)" id="aprov-cargo"></div>
+      </div>
+      <div class="field" id="aprov-field-nivel">
+        <label>Nível de contratação *</label>
+        <select id="aprov-nivel" onchange="atualizarSalarioNivel()">
+          <option value="">Selecione o nível…</option>
+        </select>
+        <div id="aprov-salario-label" style="font-size:12px;color:var(--g2);margin-top:6px;font-weight:700"></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-gh" onclick="fecharOverlay('ov-aprovar-nivel')">Cancelar</button>
+      <button class="btn btn-primary" onclick="confirmarAprovacaoNivel()">✅ Confirmar aprovação</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL NOVO CANDIDATO -->
+<div class="overlay" id="ov-cand" onclick="fecharOverlay('ov-cand',event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="mhdr"><span class="mtitle">Adicionar candidato</span><button class="mclose" onclick="fecharOverlay('ov-cand')">✕</button></div>
+    <div class="mbody">
+      <input type="hidden" id="cand-vaga-id">
+      <div class="field"><label>Nome completo *</label><input type="text" id="cand-nome"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div class="field"><label>E-mail *</label><input type="email" id="cand-email"></div>
+        <div class="field"><label>Telefone</label><input type="tel" id="cand-tel" placeholder="(21) 99999-0000"></div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr auto;gap:12px">
+        <div class="field"><label>Cidade</label><input type="text" id="cand-cidade"></div>
+        <div class="field"><label>UF</label><input type="text" id="cand-uf" style="width:60px" maxlength="2"></div>
+      </div>
+      <div class="field"><label>Como soube da vaga?</label>
+        <select id="cand-origem">
+          <option value="Manual">Cadastro manual</option>
+          <option value="LinkedIn">LinkedIn</option>
+          <option value="RioVagas">RioVagas</option>
+          <option value="Instagram">Instagram</option>
+          <option value="Indicação">Indicação</option>
+          <option value="Outro">Outro</option>
+        </select>
+      </div>
+      <div class="field"><label>Texto do currículo (cole aqui)</label><textarea id="cand-cv" rows="5" placeholder="Cole o currículo do candidato aqui..."></textarea></div>
+      <div class="field"><label>Observação</label><textarea id="cand-obs" rows="2"></textarea></div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-gh" onclick="fecharOverlay('ov-cand')">Cancelar</button>
+      <button class="btn btn-primary" onclick="adicionarCandidato()">Adicionar candidato</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL VER CANDIDATO -->
+<div class="overlay" id="ov-ver-cand" onclick="fecharOverlay('ov-ver-cand',event)">
+  <div class="modal" style="max-height:92vh;overflow-y:auto;display:flex;flex-direction:column" onclick="event.stopPropagation()">
+    <div class="mhdr">
+      <div style="display:flex;align-items:center;gap:10px">
+        <div class="av" id="m-av" style="width:36px;height:36px;font-size:13px;background:var(--bl)">–</div>
+        <div><div class="mtitle" id="m-nome">—</div><div style="font-size:11px;color:var(--mu)" id="m-cargo">—</div></div>
+      </div>
+      <button class="mclose" onclick="fecharOverlay('ov-ver-cand')">✕</button>
+    </div>
+    <div class="mbody">
+      <div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Contato</div>
+      <div style="font-size:13px;color:var(--tx);margin-bottom:12px" id="m-contato">—</div>
+      <div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:4px">Origem</div>
+      <div style="font-size:13px;color:var(--tx);margin-bottom:12px" id="m-origem">—</div>
+      <div id="m-sla-warn" style="display:none;background:var(--redbg);border-radius:8px;padding:10px 12px;font-size:12px;color:var(--red);margin-bottom:12px;border:1px solid rgba(192,57,43,.2)"></div>
+      <!-- Fit analysis (Fatia 10) -->
+      <div id="m-fit-sugestoes" style="display:none;margin-bottom:12px"></div>
+      <div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">🤖 Triagem IA</div>
+      <div id="m-triagem" style="margin-bottom:14px"></div>
+      <div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.6px;margin-bottom:8px">Mover para etapa</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px" id="m-btns-etapa"></div>
+      <div id="m-motivo-wrap" style="display:none">
+        <div class="field"><label>Motivo (obrigatório para reprovar)</label><textarea id="m-motivo" rows="2"></textarea></div>
+      </div>
+    </div>
+    <div class="mfoot">
+      <button class="btn btn-gh" onclick="fecharOverlay('ov-ver-cand')">Fechar</button>
+      <button class="btn btn-pk" id="m-btn-reprovar" onclick="moverCandidato('reprovado')">Reprovar</button>
+      <button class="btn btn-primary" id="m-btn-banco" onclick="moverCandidato('banco_talentos')">Banco de talentos</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── ESTADO ──────────────────────────────────────────────────────────────
+let EU = null;
+let VAGAS = [];
+let KB_VAGA_ID = null;
+let CAND_ATUAL = null;
+
+const CORES_AV = ['#5BA4CF','#C8185A','#E8401C','#7AC143','#6B4EB8'];
+const ROTULO = {
+  triagem:'Triagem', selecao:'Seleção', entrevista_social:'Ent. Social',
+  entrevista_tecnica:'Ent. Técnica', aprovado:'Aprovado',
+  reprovado:'Reprovado', banco_talentos:'Banco de Talentos', onboarding:'Onboarding'
+};
+const ETAPAS_ATIVAS = ['triagem','selecao','entrevista_social','entrevista_tecnica','aprovado'];
+const KB_COLUNAS = ['triagem','selecao','entrevista_social','entrevista_tecnica','aprovado'];
+
+// ── UTILITÁRIOS ──────────────────────────────────────────────────────────
+function toast(msg, dur=3000){
+  const t = document.getElementById('toast');
+  t.textContent = msg; t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'), dur);
+}
+function fecharOverlay(id, e){
+  if(!e || e.target===document.getElementById(id))
+    document.getElementById(id).classList.remove('open');
+}
+function esc(s){ return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])) }
+function iniciais(nome){ return nome.split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase() }
+function corAv(id){ return CORES_AV[id % CORES_AV.length] }
+
+// ── API ──────────────────────────────────────────────────────────────────
+async function api(metodo, rota, corpo){
+  const opts = { method:metodo, credentials:'include',
+                 headers:{'Content-Type':'application/json'} };
+  if(corpo) opts.body = JSON.stringify(corpo);
+  const r = await fetch('/api/rh'+rota, opts);
+  if(!r.ok){ const d=await r.json().catch(()=>({})); throw new Error(d.detail||r.statusText); }
+  return r.json();
+}
+
+// ── LOGIN ────────────────────────────────────────────────────────────────
+let USUARIO_SEL = null;
+
+async function carregarUsuarios(){
+  try{
+    const d = await fetch('/api/auth/usuarios').then(r=>r.json());
+    const sel = document.getElementById('sel-usuario');
+    sel.innerHTML = '<option value="">— selecione —</option>';
+    d.forEach(u => {
+      const opt = document.createElement('option');
+      opt.value = u.usuario; opt.dataset.temSenha = u.tem_senha ? '1':'0';
+      opt.textContent = u.nome;
+      sel.appendChild(opt);
+    });
+  }catch(e){ console.error(e) }
+}
+
+function irParaSenha(){
+  const sel = document.getElementById('sel-usuario');
+  const opt = sel.options[sel.selectedIndex];
+  if(!opt.value){ mostrarErr('Selecione um usuário.'); return; }
+  USUARIO_SEL = {usuario: opt.value, temSenha: opt.dataset.temSenha==='1', nome: opt.textContent};
+  document.getElementById('selecao-form').style.display = 'none';
+  document.getElementById('login-err').style.display = 'none';
+  if(!USUARIO_SEL.temSenha){
+    document.getElementById('definir-senha-form').style.display = 'block';
+  } else {
+    document.getElementById('senha-form').style.display = 'block';
+    setTimeout(()=>document.getElementById('inp-senha').focus(), 50);
+  }
+}
+
+function voltarSelecao(){
+  document.getElementById('definir-senha-form').style.display = 'none';
+  document.getElementById('senha-form').style.display = 'none';
+  document.getElementById('selecao-form').style.display = 'block';
+  USUARIO_SEL = null;
+}
+
+async function definirSenha(){
+  const s1 = document.getElementById('inp-nova-senha').value;
+  const s2 = document.getElementById('inp-conf-senha').value;
+  if(s1.length < 6){ mostrarErr('Senha deve ter ao menos 6 caracteres.'); return; }
+  if(s1 !== s2){ mostrarErr('As senhas não coincidem.'); return; }
+  try{
+    const r = await fetch('/api/auth/definir-senha',{method:'POST',credentials:'include',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({usuario:USUARIO_SEL.usuario,senha:s1})});
+    const d = await r.json();
+    if(!r.ok){ mostrarErr(d.detail||'Erro.'); return; }
+    EU = d.user; entrarNoApp();
+  }catch(e){ mostrarErr(e.message); }
+}
+
+async function fazerLogin(){
+  const senha = document.getElementById('inp-senha').value;
+  if(!senha){ mostrarErr('Digite a senha.'); return; }
+  try{
+    const r = await fetch('/api/auth/login',{method:'POST',credentials:'include',
+      headers:{'Content-Type':'application/json'},body:JSON.stringify({usuario:USUARIO_SEL.usuario,senha})});
+    const d = await r.json();
+    if(!r.ok){ mostrarErr(d.detail||'Usuário ou senha inválidos.'); return; }
+    EU = d.user; entrarNoApp();
+  }catch(e){ mostrarErr(e.message); }
+}
+
+function mostrarErr(msg){
+  const el = document.getElementById('login-err');
+  el.textContent = msg; el.style.display = 'block';
+}
+
+async function fazerLogout(){
+  await fetch('/api/auth/logout',{method:'POST',credentials:'include'});
+  EU=null; VAGAS=[];
+  document.getElementById('app').style.display='none';
+  document.getElementById('login-screen').style.display='flex';
+  document.getElementById('inp-senha').value='';
+  voltarSelecao();
+}
+
+async function verificarSessao(){
+  try{
+    const d = await fetch('/api/auth/eu',{credentials:'include'}).then(r=>r.ok?r.json():null);
+    if(d?.user){ EU=d.user; entrarNoApp(); } else { carregarUsuarios(); }
+  }catch{ carregarUsuarios(); }
+}
+
+function entrarNoApp(){
+  document.getElementById('login-screen').style.display = 'none';
+  const app = document.getElementById('app');
+  app.style.display = 'flex';
+  document.getElementById('topbar-user').textContent = EU.nome;
+  // mostrar botão nova vaga se tiver permissão
+  const ex = EU.papeis_extras || [];
+  const podeAbrir = EU.papel==='coordenador'||ex.some(p=>['rh_operador','rh_coordenador','rh_solicitante'].includes(p));
+  document.getElementById('btn-nova-vaga').style.display = podeAbrir ? '' : 'none';
+  carregarTudo();
+}
+
+// ── DADOS ────────────────────────────────────────────────────────────────
+async function carregarTudo(){
+  try{
+    const d = await api('GET','/kanban');
+    VAGAS = d.vagas || [];
+    renderPainel();
+    renderVagas();
+    preencherSelVaga();
+    if(KB_VAGA_ID) renderKanban();
+    carregarOnboarding();
+    carregarBanco();
+    carregarAlertas();
+    if(document.querySelector('.tab[data-tab="estatisticas"]')?.classList.contains('active')){
+      carregarEstatisticas();
+    }
+  }catch(e){ toast('Erro ao carregar: '+e.message); }
+}
+
+// ── PAINEL ───────────────────────────────────────────────────────────────
+function renderPainel(){
+  const ativas = VAGAS.filter(v=>v.ativa);
+  let totalCands=0, totalSLA=0;
+  ativas.forEach(v=>{
+    const por = v.candidatos_por_status||{};
+    ETAPAS_ATIVAS.forEach(s=>{ const cs=por[s]||[]; totalCands+=cs.length; cs.forEach(c=>{ if(c._sla_estourado) totalSLA++; }); });
+  });
+  document.getElementById('kpi-vagas').textContent = ativas.length;
+  document.getElementById('kpi-vagas-sub').textContent = VAGAS.length+' total';
+  document.getElementById('kpi-cands').textContent = totalCands;
+  document.getElementById('kpi-sla').textContent = totalSLA;
+  // painel vagas
+  const el = document.getElementById('painel-vagas');
+  if(!ativas.length){ el.innerHTML='<div class="empty"><b>Nenhuma vaga ativa</b>Crie uma nova vaga para começar.</div>'; return; }
+  el.innerHTML = ativas.map(v=>vagaCardHTML(v)).join('');
+}
+
+// ── VAGAS ─────────────────────────────────────────────────────────────────
+function vagaCardHTML(v){
+  const ativos = ETAPAS_ATIVAS.reduce((s,et)=>s+(v.candidatos_por_status?.[et]||[]).length,0);
+  return `<div class="vaga-card" onclick="abrirVagaKanban(${v.id})">
+    <div class="vaga-ico">🧑‍💼</div>
+    <div style="flex:1">
+      <div class="vaga-titulo">${esc(v.cargo)}</div>
+      <div class="vaga-meta">
+        <span>📅 ${v.criada_em?.slice(0,10)||'–'}</span>
+        <span>👤 ${v.total_candidatos||0} candidato(s)</span>
+        <span>⚡ ${ativos} em processo</span>
+        <span>👤 ${esc(v.solicitante)}</span>
+      </div>
+    </div>
+    <span class="sp ${v.ativa?'sp-ativa':'sp-enc'}">${v.ativa?'Ativa':'Encerrada'}</span>
+    <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+      <button class="btn btn-gh" style="font-size:11px;padding:6px 10px" onclick="event.stopPropagation();abrirModalCandidato(${v.id})">+ Candidato</button>
+      <button class="btn btn-gh" style="font-size:11px;padding:6px 10px;color:var(--bl);border-color:var(--bl)" onclick="event.stopPropagation();abrirAnuncio(${v.id})">📢 Anúncio</button>
+    </div>
+  </div>`;
+}
+
+function renderVagas(){
+  const el = document.getElementById('vagas-list');
+  if(!VAGAS.length){ el.innerHTML='<div class="empty"><b>Nenhuma vaga cadastrada</b>Crie sua primeira vaga.</div>'; return; }
+  el.innerHTML = VAGAS.map(v=>vagaCardHTML(v)).join('');
+}
+
+function abrirVagaKanban(vid){
+  KB_VAGA_ID = vid;
+  trocarTabPorNome('kanban');
+  document.getElementById('kb-sel-vaga').value = vid;
+  renderKanban();
+}
+
+// ── KANBAN ───────────────────────────────────────────────────────────────
+function preencherSelVaga(){
+  const sel = document.getElementById('kb-sel-vaga');
+  const cur = sel.value;
+  sel.innerHTML = '<option value="">— selecione uma vaga —</option>';
+  VAGAS.filter(v=>v.ativa).forEach(v=>{
+    const o=document.createElement('option'); o.value=v.id; o.textContent=v.cargo;
+    if(v.id==cur) o.selected=true;
+    sel.appendChild(o);
+  });
+}
+
+function renderKanban(){
+  const vid = parseInt(document.getElementById('kb-sel-vaga').value);
+  const board = document.getElementById('kb-board');
+  if(!vid){ board.innerHTML='<div class="empty" style="grid-column:1/-1"><b>Selecione uma vaga</b></div>'; return; }
+  KB_VAGA_ID = vid;
+  const vaga = VAGAS.find(v=>v.id===vid);
+  if(!vaga){ board.innerHTML='<div class="empty" style="grid-column:1/-1">Vaga não encontrada.</div>'; return; }
+  const por = vaga.candidatos_por_status || {};
+  const CORES_COL = {
+    triagem:{txt:'var(--bl)',bg:'#e6f1fb'},
+    selecao:{txt:'var(--mu)',bg:'#f0f0ee'},
+    entrevista_social:{txt:'var(--g2)',bg:'#ebf5d6'},
+    entrevista_tecnica:{txt:'var(--pk)',bg:'#fde8ee'},
+    aprovado:{txt:'var(--or)',bg:'#fef0eb'},
+  };
+  board.innerHTML = KB_COLUNAS.map(s=>{
+    const c = CORES_COL[s]||{txt:'var(--mu)',bg:'#f0f0ee'};
+    const cands = por[s]||[];
+    const cards = cands.map(c=>ccardHTML(c,vaga)).join('') || '<div style="text-align:center;padding:12px;font-size:11px;color:var(--mu)">–</div>';
+    return `<div class="kb-col">
+      <div class="kb-hdr" style="color:${c.txt}">
+        ${ROTULO[s]||s}
+        <span class="kb-cnt" style="background:${c.bg};color:${c.txt}">${cands.length}</span>
+      </div>
+      <div class="kb-cards">${cards}</div>
+      <div style="padding:6px 8px;border-top:1px solid var(--b1)">
+        <button onclick="abrirModalCandidato(${vid})" style="width:100%;padding:5px;font-size:11px;font-weight:600;font-family:Montserrat,sans-serif;background:transparent;border:1px dashed var(--b2);border-radius:7px;color:var(--mu);cursor:pointer">+ Candidato</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function ccardHTML(c, vaga){
+  const sla = c._sla_estourado;
+  let iaBadge = '';
+  const p = c.pontuacao_ia;
+  const parecer = c.parecer_ia;
+  if(parecer === 'processando'){
+    iaBadge = '<div class="ia-badge ia-proc">⏳ IA processando...</div>';
+  } else if(p !== null && p !== undefined){
+    const cor = p>=70?'var(--g2)':p>=40?'#b07d00':'var(--red)';
+    const icone = p>=70?'✓':p>=40?'~':'✗';
+    iaBadge = `<div class="ia-badge" style="color:${cor}">${icone} IA: ${p} pts</div>`;
+  }
+  // Badge de melhor fit
+  let fitBadge = '';
+  const fits = (c.fit_sugestoes||[]).filter(f=>!f.ignorado);
+  if(fits.length){
+    const melhor = fits[0];
+    fitBadge = `<div class="fit-badge" title="Clique no card para redirecionar">⚡ Melhor fit: ${esc(melhor.cargo)} (+${melhor.diferenca}pts)</div>`;
+  }
+  return `<div class="cc ${sla?'sla':''}" onclick="abrirCandidato(${c.id},${vaga.id})">
+    <div class="cc-name">${esc(c.nome)}</div>
+    <div class="cc-sub">${esc(c.origem||'')}</div>
+    ${iaBadge}
+    ${fitBadge}
+    ${sla?`<div class="sla-badge">⏱ ${c._dias_uteis_na_etapa}d útil(eis) — SLA estourado</div>`:''}
+  </div>`;
+}
+
+// ── CANDIDATO ─────────────────────────────────────────────────────────────
+async function abrirCandidato(cid, vid){
+  try{
+    const d = await api('GET',`/vagas/${vid}/candidatos/${cid}`);
+    const c = d.candidato;
+    CAND_ATUAL = {...c, vaga_id: vid};
+    // preencher curriculo_texto_extraido se não vier do kanban
+    if(!CAND_ATUAL.curriculo_texto_extraido) CAND_ATUAL.curriculo_texto_extraido = CAND_ATUAL.curriculo_texto;
+    document.getElementById('m-av').textContent = iniciais(c.nome);
+    document.getElementById('m-av').style.background = corAv(cid);
+    document.getElementById('m-nome').textContent = c.nome;
+    const vaga = VAGAS.find(v=>v.id===vid);
+    document.getElementById('m-cargo').textContent = vaga?.cargo||'';
+    document.getElementById('m-contato').textContent = [c.email, c.telefone, [c.cidade,c.uf].filter(Boolean).join('/')].filter(Boolean).join(' · ')||'–';
+    document.getElementById('m-origem').textContent = c.origem||'–';
+    // SLA warning
+    const sw = document.getElementById('m-sla-warn');
+    if(c._sla_estourado){
+      sw.style.display=''; sw.textContent=`⏱ SLA estourado: ${c._dias_uteis_na_etapa} dia(s) útil(eis) nesta etapa sem movimentação.`;
+    } else { sw.style.display='none'; }
+    // botões de etapa
+    const ALL_STATUS = ['triagem','selecao','entrevista_social','entrevista_tecnica','aprovado','onboarding'];
+    const CORES_BTN = {triagem:'var(--bl)',selecao:'var(--mu)',entrevista_social:'var(--g)',entrevista_tecnica:'var(--pk)',aprovado:'var(--or)',onboarding:'var(--navy)'};
+    const btns = document.getElementById('m-btns-etapa');
+    btns.innerHTML = ALL_STATUS.filter(s=>s!==c.status).map(s=>
+      `<button onclick="moverCandidato('${s}')" style="padding:6px 12px;border-radius:7px;font-size:11px;font-weight:700;font-family:Montserrat,sans-serif;cursor:pointer;border:none;background:${CORES_BTN[s]||'#ccc'};color:#fff">${ROTULO[s]||s}</button>`
+    ).join('');
+    // Painel triagem IA
+    renderTriagemIA(c);
+    // Painel fit analysis
+    renderFitSugestoes(c);
+    document.getElementById('ov-ver-cand').classList.add('open');
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+function renderTriagemIA(c){
+  const wrap = document.getElementById('m-triagem');
+  const cid = c.id; const vid = c.vaga_id || CAND_ATUAL?.vaga_id;
+  const p = c.pontuacao_ia;
+  const parecer = c.parecer_ia;
+  const temTexto = !!(c.curriculo_texto || c.curriculo_texto_extraido);
+
+  if(parecer === 'processando'){
+    wrap.innerHTML = `<div style="background:#f0f5ea;border-radius:9px;padding:12px 14px;font-size:12px;color:var(--mu);text-align:center">
+      ⏳ IA analisando o currículo... <button onclick="recarregarTriagem(${cid},${vid})" style="background:none;border:none;color:var(--g);cursor:pointer;font-weight:700">Atualizar</button></div>`;
+    setTimeout(()=>recarregarTriagem(cid,vid), 4000);
+    return;
+  }
+
+  if(!parecer || parecer === null){
+    if(!temTexto){
+      wrap.innerHTML = `<div style="background:#fff8e1;border-radius:9px;padding:12px 14px;font-size:12px;color:#7a5c00">
+        ⚠ Sem texto de currículo. Adicione o currículo manualmente no campo de texto.</div>`;
+    } else {
+      wrap.innerHTML = `<div style="background:var(--f0);border-radius:9px;padding:12px 14px;display:flex;align-items:center;gap:10px">
+        <div style="flex:1;font-size:12px;color:var(--mu)">Triagem IA ainda não realizada.</div>
+        <button class="btn btn-primary btn-sm" onclick="dispararTriagem(${cid},${vid})">🤖 Analisar com IA</button></div>`;
+    }
+    return;
+  }
+
+  if(parecer === 'erro_api' || parecer === 'erro_parse'){
+    wrap.innerHTML = `<div style="background:var(--redbg);border-radius:9px;padding:12px 14px;font-size:12px;color:var(--red)">
+      ✗ Erro na triagem IA. <button onclick="dispararTriagem(${cid},${vid})" style="background:none;border:none;color:var(--red);cursor:pointer;font-weight:700;text-decoration:underline">Tentar novamente</button></div>`;
+    return;
+  }
+
+  if(parecer === 'sem_texto'){
+    wrap.innerHTML = `<div style="background:#fff8e1;border-radius:9px;padding:12px 14px;font-size:12px;color:#7a5c00">
+      ⚠ PDF escaneado — texto não extraível. Analise o PDF manualmente.</div>`;
+    return;
+  }
+
+  const cor = p>=70?'var(--g2)':p>=40?'#b07d00':'var(--red)';
+  const bg  = p>=70?'#ebf5d6':p>=40?'#fff8e1':'var(--redbg)';
+  const label = p>=70?'Apto':p>=40?'Atenção':'Inapto';
+  const criterios = (c.criterios_ia||[]).map(cr=>{
+    const ic = cr.atende===true?'✓':cr.atende===false?'✗':'?';
+    const cc = cr.atende===true?'var(--g2)':cr.atende===false?'var(--red)':'var(--mu)';
+    return `<div style="display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid var(--b1);font-size:11px">
+      <span style="font-weight:700;color:${cc};flex-shrink:0;width:14px">${ic}</span>
+      <div><b>${esc(cr.rotulo)}</b>${cr.observacao?`<br><span style="color:var(--mu)">${esc(cr.observacao)}</span>`:''}</div>
+    </div>`;
+  }).join('');
+
+  wrap.innerHTML = `
+    <div style="background:${bg};border-radius:9px;padding:12px 14px;margin-bottom:10px;display:flex;align-items:center;gap:12px">
+      <div style="font-family:'Montserrat',sans-serif;font-size:28px;font-weight:800;color:${cor}">${p}</div>
+      <div><div style="font-size:13px;font-weight:700;color:${cor};font-family:'Montserrat',sans-serif">${label}</div>
+      <div style="font-size:11px;color:var(--mu)">Análise IA · ${c.triagem_ia_em?.slice(0,16)||'—'}</div></div>
+      <button onclick="dispararTriagem(${cid},${vid})" style="margin-left:auto;background:none;border:1px solid ${cor};color:${cor};border-radius:6px;padding:4px 8px;cursor:pointer;font-size:10px;font-weight:700">↺ Reanalisar</button>
+    </div>
+    ${c.justificativa_ia ? `<div style="font-size:12px;color:var(--tx);padding:8px 12px;background:var(--f0);border-radius:8px;border-left:3px solid ${cor};margin-bottom:10px;line-height:1.6">"${esc(c.justificativa_ia)}"</div>` : ''}
+    ${criterios ? `<div style="border:1px solid var(--b1);border-radius:9px;padding:4px 12px;margin-bottom:10px">${criterios}</div>` : ''}
+    ${!c.triagem_validada_por ? `<button class="btn btn-primary" style="font-size:11px;width:100%;justify-content:center" onclick="validarTriagem(${cid},${vid})">✓ Confirmar revisão da triagem</button>` : `<div style="font-size:11px;color:var(--mu);text-align:center">Revisado por ${esc(c.triagem_validada_por)}</div>`}
+  `;
+}
+
+async function dispararTriagem(cid, vid){
+  try{
+    await api('POST',`/vagas/${vid}/candidatos/${cid}/triar`);
+    toast('IA analisando... aguarde alguns segundos e clique em Atualizar.');
+    // atualizar estado local
+    if(CAND_ATUAL && CAND_ATUAL.id===cid){
+      CAND_ATUAL.parecer_ia = 'processando';
+      renderTriagemIA(CAND_ATUAL);
+    }
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+async function recarregarTriagem(cid, vid){
+  try{
+    const d = await api('GET',`/vagas/${vid}/candidatos/${cid}/triagem`);
+    if(CAND_ATUAL && CAND_ATUAL.id===cid){
+      Object.assign(CAND_ATUAL, d);
+      renderTriagemIA(CAND_ATUAL);
+    }
+    if(d.processando) setTimeout(()=>recarregarTriagem(cid,vid), 4000);
+    else await carregarTudo();
+  }catch(e){}
+}
+
+async function validarTriagem(cid, vid){
+  try{
+    await api('PATCH',`/vagas/${vid}/candidatos/${cid}/validar-triagem`);
+    toast('Triagem confirmada!');
+    if(CAND_ATUAL && CAND_ATUAL.id===cid){
+      CAND_ATUAL.triagem_validada_por = EU.nome;
+      renderTriagemIA(CAND_ATUAL);
+    }
+    await carregarTudo();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+async function moverCandidato(novoStatus, vagaObj, nivel_aprovado, salario_nivel){
+  if(!CAND_ATUAL) return;
+  const motivo = novoStatus==='reprovado' ? (document.getElementById('m-motivo').value||'').trim() : '';
+  if(novoStatus==='reprovado' && !motivo){ toast('Informe o motivo da reprovação.'); document.getElementById('m-motivo-wrap').style.display=''; return; }
+
+  // Fatia 10: se aprovado e cargo multi_nivel, abrir modal de nível
+  if(novoStatus==='aprovado' && !nivel_aprovado){
+    // buscar dados da vaga no catálogo
+    const vagas_list = KANBAN_DADOS?.vagas || [];
+    const vg = vagas_list.find(v=>v.id===CAND_ATUAL.vaga_id);
+    if(vg?.cargo_dados?.multi_nivel){
+      document.getElementById('ov-ver-cand').classList.remove('open');
+      abrirAprovacaoNivel(CAND_ATUAL.vaga_id, CAND_ATUAL.id, CAND_ATUAL.nome, vg);
+      return;
+    }
+  }
+
+  try{
+    const corpo = {status:novoStatus, motivo:motivo||null};
+    if(nivel_aprovado){ corpo.nivel_aprovado = nivel_aprovado; corpo.salario_nivel = salario_nivel; }
+    await api('PATCH',`/vagas/${CAND_ATUAL.vaga_id}/candidatos/${CAND_ATUAL.id}/status`, corpo);
+    document.getElementById('ov-ver-cand').classList.remove('open');
+    toast(`Candidato movido para ${ROTULO[novoStatus]||novoStatus}`);
+    await carregarTudo();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// ── MODAL NOVA VAGA ──────────────────────────────────────────────────────
+// (função abrirModalVaga e criarVaga definidas na seção Catálogo de Cargos abaixo)
+
+// ── MODAL NOVO CANDIDATO ─────────────────────────────────────────────────
+function abrirModalCandidato(vid){
+  document.getElementById('cand-vaga-id').value=vid;
+  ['nome','email','tel','cidade','uf','cv','obs'].forEach(f=>document.getElementById('cand-'+f).value='');
+  document.getElementById('cand-origem').value='Manual';
+  document.getElementById('ov-cand').classList.add('open');
+}
+
+async function adicionarCandidato(){
+  const vid   = parseInt(document.getElementById('cand-vaga-id').value);
+  const nome  = document.getElementById('cand-nome').value.trim();
+  const email = document.getElementById('cand-email').value.trim();
+  if(!nome||!email){ toast('Nome e e-mail são obrigatórios.'); return; }
+  try{
+    await api('POST',`/vagas/${vid}/candidatos`,{
+      nome, email,
+      telefone: document.getElementById('cand-tel').value.trim(),
+      cidade:   document.getElementById('cand-cidade').value.trim()||null,
+      uf:       document.getElementById('cand-uf').value.trim()||null,
+      origem:   document.getElementById('cand-origem').value,
+      curriculo_texto: document.getElementById('cand-cv').value.trim()||null,
+      observacao: document.getElementById('cand-obs').value.trim()||null,
+    });
+    document.getElementById('ov-cand').classList.remove('open');
+    toast('Candidato adicionado!');
+    await carregarTudo();
+    if(KB_VAGA_ID===vid) renderKanban();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// ── ONBOARDING ───────────────────────────────────────────────────────────
+async function carregarOnboarding(){
+  try{
+    const d = await api('GET','/onboarding');
+    const obs = d.onboardings||[];
+    document.getElementById('kpi-ob').textContent = obs.length;
+    const el = document.getElementById('ob-list');
+    if(!obs.length){ el.innerHTML='<div class="empty"><b>Nenhum onboarding ativo</b>Admita um candidato para iniciar a trilha de 30 dias.</div>'; return; }
+    el.innerHTML = obs.map(ob=>{
+      const total = ob.tarefas.length;
+      const done  = ob.tarefas.filter(t=>t.concluida).length;
+      const pct   = Math.round(done/total*100);
+      const semanas = [{label:'Semana 1 · Dias 1–7',cor:'var(--g)',dias:[1,7]},{label:'Semana 2 · Dias 8–14',cor:'var(--bl)',dias:[8,14]},{label:'Semanas 3–4 · Dias 15–30',cor:'var(--mu)',dias:[15,30]}];
+      const cols = semanas.map(s=>{
+        const tarefas = ob.tarefas.filter(t=>t.dia>=s.dias[0]&&t.dia<=s.dias[1]);
+        return `<div class="day-blk">
+          <div class="day-lbl" style="color:${s.cor}">${s.label}</div>
+          ${tarefas.map(t=>`<div class="task">
+            <div class="tchk" style="background:${t.concluida?'#ebf5d6':t.dia<=7&&!t.concluida?'var(--redbg)':'var(--f0)'};color:${t.concluida?'var(--g2)':t.dia<=7&&!t.concluida?'var(--red)':'var(--mu)'}"
+              onclick="marcarTarefa(${ob.id},${t.id},${!t.concluida})"
+              title="${t.concluida?'Marcar como pendente':'Marcar como concluída'}"
+            >${t.concluida?'✓':'○'}</div>
+            <div><div style="font-size:11px;color:${t.concluida?'var(--mu)':'var(--tx)'};${t.concluida?'text-decoration:line-through':''}">${esc(t.descricao)}</div>
+            <div style="font-size:10px;color:var(--mu)">${t.responsavel} · ${t.concluida?'concluído':'pendente'}</div></div>
+          </div>`).join('')}
+        </div>`;
+      }).join('');
+      return `<div class="ob-hdr">
+        <div class="av" style="width:44px;height:44px;font-size:15px;background:var(--bl)">${iniciais(ob.nome)}</div>
+        <div style="flex:1">
+          <div style="font-size:14px;font-weight:700;font-family:Montserrat,sans-serif">${esc(ob.nome)}</div>
+          <div style="font-size:11px;color:var(--mu)">${esc(ob.cargo)} · Admitido ${ob.admitido_em?.slice(0,10)}</div>
+        </div>
+        <div style="max-width:200px;flex:1">
+          <div style="font-size:11px;color:var(--mu);display:flex;justify-content:space-between">Progresso <b style="color:var(--g)">${pct}%</b></div>
+          <div class="pg-track"><div class="pg-fill" style="width:${pct}%"></div></div>
+        </div>
+      </div>
+      <div class="ob-cols" style="margin-bottom:20px">${cols}</div>`;
+    }).join('');
+  }catch(e){ console.error(e); }
+}
+
+async function marcarTarefa(oid, tid, concluida){
+  try{
+    await api('PATCH',`/onboarding/${oid}/tarefas/${tid}`,{concluida});
+    await carregarOnboarding();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// ── BANCO DE TALENTOS ─────────────────────────────────────────────────────
+async function carregarBanco(){
+  try{
+    const cargo = document.getElementById('banco-filtro-cargo')?.value||'';
+    const pts   = document.getElementById('banco-filtro-pts')?.value||'';
+    let rota = '/banco-talentos';
+    const params = [];
+    if(cargo) params.push(`cargo=${encodeURIComponent(cargo)}`);
+    if(pts)   params.push(`pontuacao_min=${pts}`);
+    if(params.length) rota += '?' + params.join('&');
+    const d = await api('GET', rota);
+    const banco = d.banco||[];
+    const totEl = document.getElementById('banco-total');
+    if(totEl) totEl.textContent = `${banco.length} candidato(s)`;
+    const el = document.getElementById('banco-list');
+    if(!banco.length){ el.innerHTML='<div class="empty"><b>Banco de talentos vazio</b>Nenhum candidato encontrado com esses filtros.</div>'; return; }
+    el.innerHTML = banco.map(b=>{
+      const p = b.pontuacao_ia;
+      const cor = p>=70?'var(--g2)':p>=40?'#b07d00':'var(--red)';
+      const iaBadge = p!=null ? `<span style="font-weight:700;color:${cor}">🤖 ${p} pts IA</span>` : '';
+      return `<div class="vaga-card">
+        <div class="av" style="width:44px;height:44px;font-size:14px;background:${corAv(b.id)};border-radius:50%;flex-shrink:0">${iniciais(b.nome)}</div>
+        <div style="flex:1">
+          <div class="vaga-titulo">${esc(b.nome)}</div>
+          <div class="vaga-meta">
+            <span>🎯 ${esc(b.cargo_origem||'–')}</span>
+            <span>📧 ${esc(b.email)}</span>
+            ${iaBadge}
+            <span>📅 ${b.adicionado_em?.slice(0,10)||'–'}</span>
+            ${b.nota?`<span title="${esc(b.nota)}" style="color:var(--bl)">📝 ${esc(b.nota.slice(0,30))}${b.nota.length>30?'...':''}</span>`:''}
+          </div>
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px;flex-shrink:0">
+          <button class="btn btn-g btn-sm" onclick="abrirReativar(${b.id},'${esc(b.nome)}')">↩ Reativar</button>
+          <button class="btn btn-gh btn-sm" onclick="adicionarNota(${b.id})">📝 Nota</button>
+        </div>
+      </div>`;
+    }).join('');
+  }catch(e){ console.error(e); }
+}
+
+async function abrirReativar(bid, nome){
+  const vagas = VAGAS.filter(v=>v.ativa);
+  if(!vagas.length){ toast('Nenhuma vaga ativa para reativar.'); return; }
+  const opcoes = vagas.map(v=>`${v.id}: ${v.cargo}`).join('\n');
+  const entrada = prompt(`Reativar ${nome} para qual vaga?\n\n${opcoes}\n\nDigite o ID da vaga:`);
+  if(!entrada) return;
+  const vid = parseInt(entrada.trim());
+  if(!vid){ toast('ID inválido.'); return; }
+  try{
+    await api('POST', `/banco-talentos/${bid}/reativar?vaga_id=${vid}`);
+    toast(`${nome} reativado para a vaga!`);
+    await carregarTudo();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+async function adicionarNota(bid){
+  const nota = prompt('Adicionar observação ao candidato:');
+  if(nota === null) return;
+  try{
+    await api('PATCH', `/banco-talentos/${bid}/nota?nota=${encodeURIComponent(nota)}`);
+    toast('Observação salva!');
+    await carregarBanco();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// ── TABS ──────────────────────────────────────────────────────────────────
+function trocarTab(el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('tab-'+el.dataset.tab).classList.add('active');
+}
+
+function trocarTabPorNome(nome){
+  const el = document.querySelector(`.tab[data-tab="${nome}"]`);
+  if(el) trocarTab(el);
+}
+
+// ── LINK PÚBLICO ─────────────────────────────────────────────────────────
+function _copiarTexto(txt){
+  if(navigator.clipboard && window.isSecureContext){
+    navigator.clipboard.writeText(txt)
+      .then(()=>toast('Texto copiado!'))
+      .catch(()=>_copiarFallback(txt));
+  } else {
+    _copiarFallback(txt);
+  }
+}
+function _copiarFallback(txt){
+  const ta = document.createElement('textarea');
+  ta.value = txt;
+  ta.style.cssText = 'position:fixed;top:-999px;left:-999px;opacity:0;pointer-events:none';
+  document.body.appendChild(ta);
+  ta.focus(); ta.select();
+  try{ document.execCommand('copy'); toast('Texto copiado!'); }
+  catch(e){ prompt('Copie o texto abaixo:', txt); }
+  document.body.removeChild(ta);
+}
+
+function copiarLink(link){
+  _copiarTexto(link);
+}
+
+function copiarAnuncio(id){
+  const el   = document.getElementById('an-text-'+id);
+  const link = document.getElementById('an-link-'+id);
+  const txt  = (el?.textContent||'') + (link?.textContent ? '\n\n'+link.textContent : '');
+  _copiarTexto(txt);
+}
+
+async function toggleToken(vid){
+  try{
+    const d = await api('PATCH',`/vagas/${vid}/token`);
+    if(d.token_ativo && d.link_publico){
+      toast('Formulário ativado! Link copiado automaticamente.');
+      _copiarTexto(d.link_publico);
+    } else {
+      toast('Formulário desativado.');
+    }
+    await carregarTudo();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// ── ANÚNCIO ──────────────────────────────────────────────────────────────
+let AN_VAGA_ID = null;
+let AN_DADOS = null;
+
+async function abrirAnuncio(vid){
+  AN_VAGA_ID = vid;
+  const v = VAGAS.find(v=>v.id===vid);
+  document.getElementById('an-titulo').textContent = `Anúncio — ${v?.cargo||'Vaga'}`;
+  document.getElementById('an-sub').textContent = 'Gerado pela IA · revise e copie para os canais';
+  document.getElementById('ov-anuncio').classList.add('open');
+  await carregarAnuncio();
+}
+
+async function carregarAnuncio(){
+  if(!AN_VAGA_ID) return;
+  try{
+    const d = await api('GET',`/vagas/${AN_VAGA_ID}/anuncio`);
+    AN_DADOS = d;
+    renderAnuncio(d);
+  }catch(e){ toast('Erro ao carregar anúncio: '+e.message); }
+}
+
+async function recarregarAnuncio(){
+  await carregarAnuncio();
+}
+
+function renderAnuncio(d){
+  const load   = document.getElementById('an-loading');
+  const semtxt = document.getElementById('an-sem-texto');
+  const painel = document.getElementById('an-painel');
+  const btnG   = document.getElementById('an-btn-gerar');
+  const btnR   = document.getElementById('an-btn-regerar');
+
+  load.style.display = 'none';
+  semtxt.style.display = 'none';
+  painel.style.display = 'none';
+
+  if(d.processando){
+    load.style.display = 'block';
+    setTimeout(carregarAnuncio, 4000);
+    btnG.style.display = 'none'; btnR.style.display = '';
+    return;
+  }
+
+  if(!d.link_publico){
+    semtxt.style.display = 'block';
+    btnG.style.display = 'none'; btnR.style.display = 'none';
+    return;
+  }
+
+  const temAnuncio = d.anuncio_linkedin || d.anuncio_riov || d.anuncio_instagram;
+  btnG.style.display  = temAnuncio ? 'none' : '';
+  btnR.style.display  = temAnuncio ? '' : 'none';
+
+  if(!temAnuncio) return;
+
+  painel.style.display = 'block';
+  document.getElementById('an-text-li').textContent  = d.anuncio_linkedin  || '—';
+  document.getElementById('an-text-rv').textContent  = d.anuncio_riov      || '—';
+  document.getElementById('an-text-ig').textContent  = d.anuncio_instagram || '—';
+  document.getElementById('an-link-li').textContent  = d.link_publico || '';
+  document.getElementById('an-link-li').href          = d.link_publico || '#';
+  document.getElementById('an-link-rv').textContent  = d.link_publico || '';
+  document.getElementById('an-link-rv').href          = d.link_publico || '#';
+  if(d.anuncio_gerado_em)
+    document.getElementById('an-gerado-em').textContent = `Gerado em ${d.anuncio_gerado_em.slice(0,16)}`;
+}
+
+async function gerarAnuncio(){
+  if(!AN_VAGA_ID) return;
+  try{
+    await api('POST',`/vagas/${AN_VAGA_ID}/anuncio`);
+    toast('IA gerando os anúncios... aguarde.');
+    renderAnuncio({processando:true, link_publico:'...'});
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+function swAnTab(el, id){
+  document.querySelectorAll('.an-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.an-content').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  document.getElementById('an-'+id).classList.add('active');
+}
+
+function editarAnuncio(id){
+  const campo = {li:'anuncio_linkedin',rv:'anuncio_riov',ig:'anuncio_instagram'}[id];
+  const el = document.getElementById('an-text-'+id);
+  const atual = el?.textContent || '';
+  const novo = prompt('Editar texto:', atual);
+  if(novo === null) return;
+  api('PATCH',`/vagas/${AN_VAGA_ID}/anuncio`,{[campo]: novo})
+    .then(()=>{ if(el) el.textContent=novo; toast('Texto atualizado!'); })
+    .catch(e=>toast('Erro: '+e.message));
+}
+
+// ── ALERTAS SLA ───────────────────────────────────────────────────────────
+async function carregarAlertas(){
+  try{
+    const [sla, emails] = await Promise.all([
+      api('GET','/admin/sla/relatorio').catch(()=>null),
+      api('GET','/admin/email/log').catch(()=>null),
+    ]);
+    renderSLA(sla);
+    renderEmailLog(emails);
+    // badge na aba
+    const total = sla?.total_atrasados || 0;
+    const badge = document.getElementById('alertas-badge');
+    if(total > 0){ badge.textContent=total; badge.style.display='inline'; }
+    else { badge.style.display='none'; }
+    document.getElementById('kpi-sla').textContent = total;
+  }catch(e){ console.error(e); }
+}
+
+function renderSLA(d){
+  const el = document.getElementById('sla-list');
+  if(!d){ el.innerHTML='<div class="empty"><b>Sem acesso</b>Apenas coordenadores veem o relatório de SLA.</div>'; return; }
+  const items = [...(d.candidatos_atrasados||[]), ...(d.onboarding_atrasado||[])];
+  if(!items.length){ el.innerHTML='<div class="empty" style="color:var(--g)"><b>✓ Tudo em dia</b>Nenhum item com SLA estourado.</div>'; return; }
+  el.innerHTML = items.map(i=>{
+    const isCand = i.tipo==='candidato';
+    return `<div class="alerta-card ${isCand?'':'ob'}">
+      <div class="alerta-titulo">${esc(isCand ? i.nome : i.colaborador)}</div>
+      <div class="alerta-sub">${esc(isCand ? `${i.cargo} · ${i.etapa}` : `Onboarding · ${i.tarefa||'—'}`)}</div>
+      <div class="alerta-badge">⏱ ${i.dias_atraso}d útil(eis) em atraso · ${esc(i.responsavel||'—')}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderEmailLog(d){
+  const el = document.getElementById('email-log-list');
+  if(!d){ el.innerHTML='<div class="empty"><b>Sem acesso</b></div>'; return; }
+  const log = d.log || [];
+  if(!log.length){ el.innerHTML='<div class="empty"><b>Sem registros</b>Nenhum e-mail enviado ainda.</div>'; return; }
+  el.innerHTML = `<div style="font-size:10px;color:var(--mu);margin-bottom:6px">SMTP: ${d.smtp_configurado?'✓ Configurado':'✗ Não configurado'} · ${log.length} registros</div>`
+    + log.slice(0,30).map(l=>`<div class="email-log-item ${l.ok?'ok':'err'}">
+      <div style="font-weight:700">${l.ok?'✓':'✗'} ${esc(l.assunto||'—')}</div>
+      <div style="color:var(--mu)">${l.em?.slice(0,16)||'—'} · ${(l.destinatarios||[]).join(', ')}</div>
+      ${l.erro?`<div style="color:var(--red)">${esc(l.erro)}</div>`:''}
+    </div>`).join('');
+}
+
+async function forcarSLA(){
+  try{
+    await api('POST','/admin/sla/rodar-agora');
+    toast('Scan de SLA executado!');
+    await carregarAlertas();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// ── ESTATÍSTICAS ─────────────────────────────────────────────────────────
+async function carregarEstatisticas(){
+  const el = document.getElementById('estat-content');
+  if(!el) return;
+  el.innerHTML = '<div style="text-align:center;padding:20px;color:var(--mu)">Carregando...</div>';
+  try{
+    const d = await api('GET','/estatisticas');
+    const v = d.vagas||{}; const c = d.candidatos||{};
+    const ia = d.triagem_ia||{}; const b = d.banco_talentos||{}; const ob = d.onboarding||{};
+    const orig = d.origem_candidatos||{};
+
+    const origemRows = Object.entries(orig).sort((a,b)=>b[1]-a[1])
+      .map(([k,v])=>`<div class="estat-row"><span>${esc(k)}</span><span class="estat-val">${v}</span></div>`).join('');
+    const statusRows = Object.entries(c.por_status||{}).sort((a,b)=>b[1]-a[1])
+      .map(([k,v])=>`<div class="estat-row"><span>${esc(k)}</span><span class="estat-val">${v}</span></div>`).join('');
+
+    el.innerHTML = `
+      <div class="estat-grid">
+        <div class="estat-card">
+          <div class="estat-title">Vagas</div>
+          <div class="estat-row"><span>Total</span><span class="estat-val">${v.total||0}</span></div>
+          <div class="estat-row"><span>Ativas</span><span class="estat-val" style="color:var(--g)">${v.ativas||0}</span></div>
+          <div class="estat-row"><span>Encerradas</span><span class="estat-val">${v.encerradas||0}</span></div>
+        </div>
+        <div class="estat-card">
+          <div class="estat-title">Candidatos</div>
+          <div class="estat-row"><span>Total</span><span class="estat-val">${c.total||0}</span></div>
+          <div class="estat-row"><span>Em processo</span><span class="estat-val" style="color:var(--bl)">${c.em_processo||0}</span></div>
+          <div class="estat-row"><span>Taxa de aprovação</span><span class="estat-val" style="color:var(--g)">${c.taxa_aprovacao||0}%</span></div>
+        </div>
+        <div class="estat-card">
+          <div class="estat-title">Triagem IA</div>
+          <div class="estat-row"><span>Triados</span><span class="estat-val">${ia.candidatos_triados||0}</span></div>
+          <div class="estat-row"><span>Média de pontuação</span><span class="estat-val">${ia.media_pontuacao||'–'} pts</span></div>
+          <div class="estat-row"><span>Aptos pela IA</span><span class="estat-val" style="color:var(--g)">${ia.aprovados_pela_ia||0}</span></div>
+          <div class="estat-row"><span>Atenção</span><span class="estat-val" style="color:#b07d00">${ia.atencao_pela_ia||0}</span></div>
+          <div class="estat-row"><span>Inaptos</span><span class="estat-val" style="color:var(--red)">${ia.inaptos_pela_ia||0}</span></div>
+        </div>
+        <div class="estat-card">
+          <div class="estat-title">Status dos candidatos</div>
+          ${statusRows||'<div class="estat-row"><span>Nenhum</span><span class="estat-val">–</span></div>'}
+        </div>
+        <div class="estat-card">
+          <div class="estat-title">Origem dos candidatos</div>
+          ${origemRows||'<div class="estat-row"><span>Nenhum</span><span class="estat-val">–</span></div>'}
+        </div>
+        <div class="estat-card">
+          <div class="estat-title">Banco de talentos & Onboarding</div>
+          <div class="estat-row"><span>Banco de talentos</span><span class="estat-val">${b.total||0}</span></div>
+          <div class="estat-row"><span>Onboardings ativos</span><span class="estat-val" style="color:var(--bl)">${ob.ativos||0}</span></div>
+          <div class="estat-row"><span>Efetivados</span><span class="estat-val" style="color:var(--g)">${ob.encerrados||0}</span></div>
+        </div>
+      </div>
+      <div style="font-size:11px;color:var(--mu);text-align:right">Gerado em ${d.gerado_em?.slice(0,16)||'–'}</div>`;
+  }catch(e){ el.innerHTML=`<div class="empty"><b>Sem acesso</b>${e.message}</div>`; }
+}
+
+// Carregar estatísticas ao clicar na aba
+document.addEventListener('DOMContentLoaded', ()=>{
+  const tabEst = document.querySelector('.tab[data-tab="estatisticas"]');
+  if(tabEst) tabEst.addEventListener('click', ()=>setTimeout(carregarEstatisticas, 100));
+});
+
+// ── AVALIAÇÕES DE DESEMPENHO — Fatia A ───────────────────────────────────
+let COLAB_LISTA    = [];
+let AVALIADORES    = [];   // {id, nome, usuario, papel}
+
+// Cores por setor
+const SETOR_BADGE = {
+  'Operacional':'sb-op','Monitoramento':'sb-mo','Projetos':'sb-pr',
+  'TI':'sb-ti','Administrativo':'sb-ad','Licitação':'sb-li',
+};
+
+// helper: siglas dos avatares de colaboradores
+function colabCorAv(id){ return CORES_AV[id % CORES_AV.length]; }
+
+async function carregarAvaliadores(){
+  if(AVALIADORES.length) return;   // já carregado
+  try{
+    const d = await apiDesempenho('GET','/avaliadores');
+    AVALIADORES = d.avaliadores || [];
+  }catch(e){ console.error('Falha ao carregar avaliadores:', e.message); }
+}
+
+async function carregarColaboradores(){
+  const setor = document.getElementById('av-filtro-setor')?.value || '';
+  const ativo = document.getElementById('av-filtro-ativo')?.value || '';
+  let rota = '/colaboradores';
+  const params = [];
+  if(setor) params.push('setor='+encodeURIComponent(setor));
+  if(ativo !== '') params.push('ativo='+ativo);
+  if(params.length) rota += '?'+params.join('&');
+  try{
+    const d = await apiDesempenho('GET', rota);
+    COLAB_LISTA = d.colaboradores || [];
+    renderColaboradores(COLAB_LISTA, d.total);
+    renderAvaliacoesKPIs(COLAB_LISTA);
+  }catch(e){ toast('Erro ao carregar colaboradores: '+e.message); }
+}
+
+function renderAvaliacoesKPIs(lista){
+  const todos    = lista.length;
+  const ativos   = lista.filter(c=>c.ativo!==false).length;
+  const inativos = todos - ativos;
+  const setores  = new Set(lista.map(c=>c.setor).filter(Boolean)).size;
+  document.getElementById('av-kpi-total').textContent    = todos;
+  document.getElementById('av-kpi-ativos').textContent   = ativos;
+  document.getElementById('av-kpi-setores').textContent  = setores;
+  document.getElementById('av-kpi-inativos').textContent = inativos;
+}
+
+function renderColaboradores(lista, total){
+  const label = document.getElementById('av-total-label');
+  if(label) label.textContent = `${total} colaborador(es)`;
+
+  const el = document.getElementById('av-colab-list');
+  if(!lista.length){
+    el.innerHTML = '<div class="empty"><b>Nenhum colaborador encontrado</b>Ajuste os filtros ou cadastre o primeiro colaborador.</div>';
+    return;
+  }
+
+  el.innerHTML = '<div class="colab-list">'+lista.map(c=>{
+    const ini = iniciais(c.nome);
+    const cor = colabCorAv(c.id);
+    const setorClass = SETOR_BADGE[c.setor] || 'sb-ad';
+    const admissao = c.data_admissao ? c.data_admissao.slice(0,10) : '–';
+    const avNome = esc(c._avaliador_nome || '–');
+    const supNome = c._supervisor_nome ? ` · Sup: ${esc(c._supervisor_nome)}` : '';
+    const vinBadge = `<span class="vinculo-badge">${esc(c.vinculo||'–')}</span>`;
+    const desligadoBadge = c.ativo===false
+      ? '<span style="font-size:10px;font-weight:700;color:var(--red);font-family:Montserrat,sans-serif">DESLIGADO</span>'
+      : '';
+    return `<div class="colab-card ${c.ativo===false?'inativo':''}">
+      <div class="av" style="width:42px;height:42px;font-size:14px;background:${cor};border-radius:50%;flex-shrink:0">${ini}</div>
+      <div class="colab-info">
+        <div class="colab-nome">${esc(c.nome)} ${desligadoBadge}</div>
+        <div class="colab-meta">
+          <span>${esc(c.cargo)}</span>
+          <span class="setor-badge ${setorClass}">${esc(c.setor)}</span>
+          ${vinBadge}
+          <span>📅 ${admissao}</span>
+          <span>👤 ${avNome}${supNome}</span>
+        </div>
+      </div>
+      ${c.ativo!==false ? `<button class="btn" style="flex-shrink:0;font-size:11px;padding:6px 12px;background:var(--g);color:#fff;border:none;border-radius:8px;cursor:pointer" onclick="abrirModalCiclo(${c.id})" title="Disparar avaliação">⚡</button>` : ''}
+      <button class="btn btn-gh" style="flex-shrink:0;font-size:11px;padding:6px 12px"
+        onclick="abrirModalColaborador(${c.id})">✏ Editar</button>
+    </div>`;
+  }).join('')+'</div>';
+}
+
+async function abrirModalColaborador(cid){
+  await carregarAvaliadores();
+  const ehNovo = cid === null;
+
+  document.getElementById('colab-modal-titulo').textContent = ehNovo ? 'Novo colaborador' : 'Editar colaborador';
+  document.getElementById('colab-id').value = cid ?? '';
+  document.getElementById('colab-field-ativo').style.display = ehNovo ? 'none' : '';
+
+  // Popular selects de avaliador e supervisor
+  const opts = AVALIADORES.map(a=>
+    `<option value="${a.id}">${esc(a.nome)}</option>`
+  ).join('');
+  document.getElementById('colab-avaliador').innerHTML  = '<option value="">Selecione...</option>'+opts;
+  document.getElementById('colab-supervisor').innerHTML = '<option value="0">Não se aplica</option>'+opts;
+
+  if(ehNovo){
+    ['colab-nome','colab-cargo','colab-email'].forEach(id=>document.getElementById(id).value='');
+    document.getElementById('colab-setor').value    = '';
+    document.getElementById('colab-vinculo').value  = '';
+    document.getElementById('colab-avaliador').value= '';
+    document.getElementById('colab-supervisor').value='0';
+    document.getElementById('colab-admissao').value = '';
+  } else {
+    const c = COLAB_LISTA.find(x=>x.id===cid);
+    if(!c){ toast('Colaborador não encontrado.'); return; }
+    document.getElementById('colab-nome').value     = c.nome      || '';
+    document.getElementById('colab-cargo').value    = c.cargo     || '';
+    document.getElementById('colab-email').value    = c.email     || '';
+    document.getElementById('colab-setor').value    = c.setor     || '';
+    document.getElementById('colab-vinculo').value  = c.vinculo   || '';
+    document.getElementById('colab-avaliador').value= c.avaliador_id ?? '';
+    document.getElementById('colab-supervisor').value= c.supervisor_id ?? '0';
+    document.getElementById('colab-admissao').value = c.data_admissao || '';
+    document.getElementById('colab-ativo').value    = c.ativo!==false ? 'true' : 'false';
+  }
+
+  document.getElementById('ov-colaborador').classList.add('open');
+}
+
+async function salvarColaborador(){
+  const cid      = document.getElementById('colab-id').value;
+  const ehNovo   = !cid;
+  const nome     = document.getElementById('colab-nome').value.trim();
+  const cargo    = document.getElementById('colab-cargo').value.trim();
+  const email    = document.getElementById('colab-email').value.trim();
+  const setor    = document.getElementById('colab-setor').value;
+  const vinculo  = document.getElementById('colab-vinculo').value;
+  const avId     = parseInt(document.getElementById('colab-avaliador').value);
+  const supId    = parseInt(document.getElementById('colab-supervisor').value) || 0;
+  const admissao = document.getElementById('colab-admissao').value;
+  const ativo    = document.getElementById('colab-ativo').value === 'true';
+
+  if(!nome||!cargo||!email||!setor||!vinculo||!admissao||!avId){
+    toast('Preencha todos os campos obrigatórios (*).');
+    return;
+  }
+
+  const corpo = {
+    nome, cargo, email, setor, vinculo,
+    data_admissao: admissao,
+    avaliador_id:  avId,
+    supervisor_id: supId || null,
+  };
+  if(!ehNovo) corpo.ativo = ativo;
+
+  try{
+    if(ehNovo){
+      await apiDesempenho('POST', '/colaboradores', corpo);
+      toast('Colaborador cadastrado com sucesso!');
+    } else {
+      await apiDesempenho('PATCH', `/colaboradores/${cid}`, corpo);
+      toast('Colaborador atualizado!');
+    }
+    document.getElementById('ov-colaborador').classList.remove('open');
+    await carregarColaboradores();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// ── CICLOS DE AVALIAÇÃO — Fatia C ────────────────────────────────────────
+let CICLOS_LISTA = [];
+
+const CICLO_STATUS_LABEL = {
+  pendente:'Pendente', em_andamento:'Em andamento',
+  encerrado:'Encerrado', cancelado:'Cancelado'
+};
+const CICLO_TIPO_LABEL = {
+  experiencia_1:'Experiência 35d', experiencia_2:'Experiência 80d', semestral:'Semestral'
+};
+
+function abrirModalCiclo(colabId){
+  const c = COLAB_LISTA.find(x=>x.id===colabId);
+  if(!c){ toast('Colaborador não encontrado.'); return; }
+  document.getElementById('ciclo-colab-id').value = colabId;
+  document.getElementById('ciclo-colab-nome').textContent = c.nome;
+  document.getElementById('ciclo-colab-info').textContent = `${c.cargo} · ${c.setor}`;
+  document.getElementById('ciclo-tipo').value  = '';
+  document.getElementById('ciclo-prazo').value = '';
+  document.getElementById('ciclo-enviar-email').checked = true;
+  document.getElementById('ciclo-link-gerado').style.display = 'none';
+  document.getElementById('ciclo-modal-foot').style.display = '';
+  document.getElementById('ov-ciclo').classList.add('open');
+}
+
+async function dispararCiclo(){
+  const colabId = parseInt(document.getElementById('ciclo-colab-id').value);
+  const tipo    = document.getElementById('ciclo-tipo').value;
+  const prazo   = document.getElementById('ciclo-prazo').value;
+  const envEmail= document.getElementById('ciclo-enviar-email').checked;
+
+  if(!tipo || !prazo){ toast('Selecione o tipo e o prazo da avaliação.'); return; }
+
+  try{
+    const d = await apiDesempenho('POST', '/ciclos', {
+      colaborador_id: colabId, tipo, prazo, enviar_email: envEmail
+    });
+    // mostrar link gerado
+    const urlEl = document.getElementById('ciclo-link-url');
+    urlEl.value = d.link_auto || '';
+    document.getElementById('ciclo-link-gerado').style.display = '';
+    document.getElementById('ciclo-modal-foot').style.display  = 'none';
+    document.getElementById('ciclo-email-status').textContent  = d.email_enviado
+      ? '✅ E-mail enviado ao colaborador.'
+      : '⚠ E-mail não enviado (verifique SMTP ou e-mail do colaborador). Copie e envie o link manualmente.';
+    toast('Ciclo disparado com sucesso!');
+    await carregarCiclos();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+function copiarLink(){
+  const el = document.getElementById('ciclo-link-url');
+  el.select();
+  document.execCommand('copy');
+  toast('Link copiado!');
+}
+
+async function carregarCiclos(){
+  const status = document.getElementById('ciclo-filtro-status')?.value || '';
+  let rota = '/ciclos';
+  if(status) rota += '?status='+encodeURIComponent(status);
+  try{
+    const d = await apiDesempenho('GET', rota);
+    CICLOS_LISTA = d.ciclos || [];
+    renderCiclos(CICLOS_LISTA, d.total);
+  }catch(e){ toast('Erro ao carregar ciclos: '+e.message); }
+}
+
+function renderCiclos(lista, total){
+  const el = document.getElementById('av-ciclos-list');
+  const lbl = document.getElementById('ciclos-total-label');
+  if(lbl) lbl.textContent = `${total} ciclo(s)`;
+  if(!lista.length){
+    el.innerHTML = '<div class="empty"><b>Nenhum ciclo encontrado</b>Dispare a primeira avaliação clicando em ⚡ no card do colaborador.</div>';
+    return;
+  }
+  const ex = EU?.papeis_extras || [];
+  const podeCanc = EU?.papel==='coordenador' || ex.includes('rh_coordenador');
+  const podeEnviar = EU?.papel==='coordenador'
+    || ex.some(p=>['rh_operador','rh_coordenador'].includes(p));
+
+  el.innerHTML = lista.map(c=>{
+    const statusClass = 'cs-'+(c.status||'pendente');
+    const statusLabel = CICLO_STATUS_LABEL[c.status] || c.status;
+    const tipoLabel   = CICLO_TIPO_LABEL[c.tipo]     || c.tipo;
+    const prazo = c.prazo ? `· Prazo: ${c.prazo.slice(0,10)}` : '';
+
+    // indicadores de preenchimento
+    const autoOk  = !!c.autoavaliacao;
+    const avalOk  = !!c.avaliacao_avaliador;
+    const supOk   = !!c.avaliacao_supervisor;
+    const temSup  = !!c.token_sup;
+
+    const passos = `
+      <span style="font-size:11px">${autoOk?'✅':'○'} Auto</span>
+      <span style="font-size:11px;margin-left:8px">${avalOk?'✅':'○'} Avaliador</span>
+      ${temSup ? `<span style="font-size:11px;margin-left:8px">${supOk?'✅':'○'} Supervisor</span>` : ''}`;
+
+    // botões de ação
+    let acoes = '';
+    if(podeEnviar && !['encerrado','cancelado'].includes(c.status)){
+      if(autoOk && !avalOk)
+        acoes += `<button class="btn btn-gh" style="font-size:10px;padding:4px 10px"
+          onclick="enviarLinkAvaliador(${c.id})">📧 Enviar ao avaliador</button>`;
+      if(autoOk && avalOk && temSup && !supOk)
+        acoes += `<button class="btn btn-gh" style="font-size:10px;padding:4px 10px"
+          onclick="enviarLinkSupervisor(${c.id})">🏆 Enviar ao supervisor</button>`;
+    }
+    // Encerrar: auto + aval preenchidos; supervisor opcional
+    const prontoParaEncerrar = autoOk && avalOk && !['encerrado','cancelado'].includes(c.status);
+    if(podeCanc && prontoParaEncerrar)
+      acoes += `<button class="btn" style="font-size:10px;padding:4px 10px;background:#0D2614;color:#fff;border:none;border-radius:8px;cursor:pointer"
+        onclick="encerrarCiclo(${c.id})">⚓ Encerrar</button>`;
+    if(c.status==='encerrado')
+      acoes += `<button class="btn btn-gh" style="font-size:10px;padding:4px 10px"
+        onclick="verResultado(${c.id})">📊 Resultado</button>`;
+    if(podeCanc && ['pendente','em_andamento'].includes(c.status))
+      acoes += `<button class="btn btn-gh" style="font-size:10px;padding:4px 10px;color:var(--red)"
+        onclick="cancelarCiclo(${c.id})">✕ Cancelar</button>`;
+
+    return `<div class="ciclo-card">
+      <span class="ciclo-status ${statusClass}">${statusLabel}</span>
+      <div class="ciclo-info">
+        <div class="ciclo-nome">${esc(c._colaborador_nome||'–')} · <span style="font-weight:400">${tipoLabel}</span></div>
+        <div class="ciclo-meta">${esc(c._colaborador_setor||'–')} ${prazo} &nbsp;·&nbsp; ${passos}</div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:5px;flex-shrink:0">${acoes}</div>
+    </div>`;
+  }).join('');
+}
+
+async function cancelarCiclo(cid){
+  if(!confirm('Cancelar este ciclo? Esta ação não pode ser desfeita.')) return;
+  try{
+    await apiDesempenho('PATCH', `/ciclos/${cid}/cancelar`, {});
+    toast('Ciclo cancelado.');
+    await carregarCiclos();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+async function enviarLinkAvaliador(cid){
+  try{
+    const d = await apiDesempenho('POST', `/ciclos/${cid}/enviar-avaliador`, {});
+    const av = d.avaliador || {};
+    const msg = d.email_enviado
+      ? `✅ E-mail enviado para ${av.nome} (${av.email}).`
+      : `Link gerado. E-mail não enviado — envie o link manualmente:\n${d.link_aval}`;
+    alert(msg);
+    await carregarCiclos();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+async function enviarLinkSupervisor(cid){
+  try{
+    const d = await apiDesempenho('POST', `/ciclos/${cid}/enviar-supervisor`, {});
+    const sup = d.supervisor || {};
+    const msg = d.email_enviado
+      ? `✅ E-mail enviado para ${sup.nome} (${sup.email}).`
+      : `Link gerado. E-mail não enviado — envie o link manualmente:\n${d.link_sup}`;
+    alert(msg);
+    await carregarCiclos();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// ── CRITÉRIOS TÉCNICOS — Fatia B ─────────────────────────────────────────
+let CRIT_LISTA = [];
+
+function trocarSubAv(sub){
+  document.getElementById('av-sub-colaboradores').style.display  = sub==='colaboradores'   ? '' : 'none';
+  document.getElementById('av-sub-criterios').style.display      = sub==='criterios'       ? '' : 'none';
+  document.getElementById('av-sub-ciclos-content').style.display = sub==='ciclos'          ? '' : 'none';
+  document.getElementById('av-sub-acompanhamento').style.display = sub==='acompanhamento'  ? '' : 'none';
+  document.getElementById('av-sub-colab').classList.toggle('active',  sub==='colaboradores');
+  document.getElementById('av-sub-crit').classList.toggle('active',   sub==='criterios');
+  document.getElementById('av-sub-ciclos').classList.toggle('active', sub==='ciclos');
+  document.getElementById('av-sub-acomp').classList.toggle('active',  sub==='acompanhamento');
+  if(sub==='criterios')      { _atualizarBotoesCriterios(); carregarCriterios(); }
+  if(sub==='ciclos')         { _atualizarBotoesGatilhos(); carregarCiclos(); }
+  if(sub==='acompanhamento') { carregarAcompanhamento(); }
+}
+
+function _atualizarBotoesCriterios(){
+  const ex = EU?.papeis_extras || [];
+  const podeEditar = EU?.papel==='coordenador'
+    || ex.includes('rh_coordenador');
+  const btn = document.getElementById('av-btn-novo-crit');
+  if(btn) btn.style.display = podeEditar ? '' : 'none';
+}
+
+async function carregarCriterios(){
+  const setor   = document.getElementById('crit-filtro-setor')?.value || '';
+  const inativos = document.getElementById('crit-mostrar-inativos')?.checked;
+  let rota = '/criterios';
+  const params = [];
+  if(setor) params.push('setor='+encodeURIComponent(setor));
+  if(!inativos) params.push('ativo=true');
+  if(params.length) rota += '?'+params.join('&');
+  try{
+    const d = await apiDesempenho('GET', rota);
+    CRIT_LISTA = d.criterios || [];
+    renderCriterios(CRIT_LISTA);
+  }catch(e){ toast('Erro ao carregar critérios: '+e.message); }
+}
+
+function renderCriterios(lista){
+  const el = document.getElementById('av-crit-list');
+  if(!lista.length){
+    el.innerHTML = '<div class="empty"><b>Nenhum critério encontrado</b>Ajuste os filtros ou cadastre o primeiro critério.</div>';
+    return;
+  }
+  const ex = EU?.papeis_extras || [];
+  const podeEditar = EU?.papel==='coordenador' || ex.includes('rh_coordenador');
+
+  // agrupar por setor
+  const ORDEM_SETORES = ['Operacional','Monitoramento','Projetos','TI','Administrativo','Licitação'];
+  const grupos = {};
+  lista.forEach(c=>{
+    const s = c.setor || 'Outros';
+    if(!grupos[s]) grupos[s] = [];
+    grupos[s].push(c);
+  });
+
+  const setores = ORDEM_SETORES.filter(s=>grupos[s])
+    .concat(Object.keys(grupos).filter(s=>!ORDEM_SETORES.includes(s)));
+
+  el.innerHTML = setores.map(setor=>{
+    const itens = grupos[setor];
+    const setorClass = SETOR_BADGE[setor] || 'sb-ad';
+    const rows = itens.map((c,i)=>{
+      const tags = (c.aplicavel_a||[]).length
+        ? `<span class="crit-tag">${esc(c.aplicavel_a.join(', '))}</span>`
+        : `<span class="crit-tag" style="background:transparent;color:var(--mu)">Todos</span>`;
+      const inativoLabel = c.ativo===false
+        ? '<span style="font-size:10px;font-weight:700;color:var(--red);font-family:Montserrat,sans-serif">INATIVO</span>' : '';
+      const editBtn = podeEditar
+        ? `<button class="btn btn-gh" style="font-size:10px;padding:4px 10px;flex-shrink:0" onclick="abrirModalCriterio(${c.id})">✏</button>`
+        : '';
+      return `<div class="crit-row ${c.ativo===false?'inativo':''}">
+        <div class="crit-num">${i+1}</div>
+        <div class="crit-desc">${esc(c.descricao)} ${inativoLabel}</div>
+        ${tags}
+        ${editBtn}
+      </div>`;
+    }).join('');
+    return `<div class="crit-setor-bloco">
+      <div class="crit-setor-hdr">
+        <span class="setor-badge ${setorClass} crit-setor-nome">${esc(setor)}</span>
+        <span class="crit-setor-count">${itens.length} critério(s)</span>
+      </div>
+      ${rows}
+    </div>`;
+  }).join('');
+}
+
+function abrirModalCriterio(cid){
+  const ehNovo = cid === null;
+  document.getElementById('crit-modal-titulo').textContent = ehNovo ? 'Novo critério' : 'Editar critério';
+  document.getElementById('crit-id').value = cid ?? '';
+  document.getElementById('crit-field-ativo').style.display = ehNovo ? 'none' : '';
+
+  if(ehNovo){
+    document.getElementById('crit-setor').value      = '';
+    document.getElementById('crit-descricao').value  = '';
+    document.getElementById('crit-aplicavel').value  = '';
+  } else {
+    const c = CRIT_LISTA.find(x=>x.id===cid);
+    if(!c){ toast('Critério não encontrado.'); return; }
+    document.getElementById('crit-setor').value      = c.setor      || '';
+    document.getElementById('crit-descricao').value  = c.descricao  || '';
+    document.getElementById('crit-aplicavel').value  = (c.aplicavel_a||[]).join(', ');
+    document.getElementById('crit-ativo').value      = c.ativo!==false ? 'true' : 'false';
+  }
+  document.getElementById('ov-criterio').classList.add('open');
+}
+
+async function salvarCriterio(){
+  const cid       = document.getElementById('crit-id').value;
+  const ehNovo    = !cid;
+  const setor     = document.getElementById('crit-setor').value;
+  const descricao = document.getElementById('crit-descricao').value.trim();
+  const aplicRaw  = document.getElementById('crit-aplicavel').value.trim();
+  const aplicavel_a = aplicRaw ? aplicRaw.split(',').map(s=>s.trim()).filter(Boolean) : [];
+  const ativo     = document.getElementById('crit-ativo').value === 'true';
+
+  if(!setor || !descricao){
+    toast('Preencha setor e descrição.');
+    return;
+  }
+  const corpo = { setor, descricao, aplicavel_a };
+  if(!ehNovo) corpo.ativo = ativo;
+
+  try{
+    if(ehNovo){
+      await apiDesempenho('POST', '/criterios', corpo);
+      toast('Critério cadastrado!');
+    } else {
+      await apiDesempenho('PATCH', `/criterios/${cid}`, corpo);
+      toast('Critério atualizado!');
+    }
+    document.getElementById('ov-criterio').classList.remove('open');
+    await carregarCriterios();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// ── ENCERRAMENTO E RESULTADO — Fatia E ───────────────────────────────────
+const COR_CLASSIF = {
+  'Muito acima do esperado': '#2d6a0a',
+  'Acima do esperado':       '#4a7a2a',
+  'Dentro do esperado':      '#856404',
+  'Abaixo do esperado':      '#a04000',
+  'Muito abaixo do esperado':'#a00000',
+};
+
+async function encerrarCiclo(cid){
+  if(!confirm('Encerrar este ciclo e calcular o resultado? O colaborador receberá um e-mail.')) return;
+  try{
+    const d = await apiDesempenho('POST', `/ciclos/${cid}/encerrar`, {});
+    const cor = COR_CLASSIF[d.classificacao] || '#333';
+    const msg = `✅ Ciclo encerrado!\n\nClassificação: ${d.classificacao}\nMédia geral: ${d.media_geral?.toFixed(2) || '–'}\n\n`
+      + (d.email_enviado ? 'E-mail enviado ao colaborador.' : '⚠ E-mail não enviado (verifique SMTP).');
+    alert(msg);
+    await carregarCiclos();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+async function verResultado(cid){
+  document.getElementById('resultado-body').innerHTML =
+    '<div style="text-align:center;padding:32px;color:var(--mu)">Carregando…</div>';
+  document.getElementById('ov-resultado').classList.add('open');
+  try{
+    const d = await apiDesempenho('GET', `/ciclos/${cid}/resultado`);
+    renderResultado(d);
+  }catch(e){
+    document.getElementById('resultado-body').innerHTML =
+      `<div style="color:var(--red);padding:16px">Erro: ${esc(e.message)}</div>`;
+  }
+}
+
+function renderResultado(d){
+  const {colaborador, ciclo, resultado, feedback_avaliador} = d;
+  const r  = resultado;
+  const cor = COR_CLASSIF[r.classificacao] || '#333';
+  const nota = r.media_geral_final != null ? r.media_geral_final.toFixed(2) : '–';
+
+  // Cabeçalho
+  let html = `<div class="res-header">
+    <div class="res-nome">${esc(colaborador.nome)}</div>
+    <div class="res-sub">${esc(colaborador.cargo)} · ${esc(colaborador.setor)} · ${esc(ciclo.tipo_label)}</div>
+    <div class="res-nota-big" style="color:${cor}">${nota}</div>
+    <div class="res-classif" style="color:${cor}">${esc(r.classificacao)}</div>
+    ${r.com_supervisor ? '<div style="font-size:10px;color:var(--mu);margin-top:6px">Pesos: Avaliador 60% + Supervisor 40%</div>' : ''}
+  </div>`;
+
+  // Médias por bloco
+  html += '<div class="res-medias">';
+  html += blocoMedia('🤝 Comportamental',
+    r.media_comportamental_auto, r.media_comportamental_aval,
+    r.media_comportamental_sup,  r.media_comportamental_final, r.com_supervisor);
+  html += blocoMedia('🔧 Técnica',
+    r.media_tecnica_auto, r.media_tecnica_aval,
+    r.media_tecnica_sup,  r.media_tecnica_final, r.com_supervisor);
+  html += '</div>';
+
+  // Por critério
+  const comp = r.por_criterio.filter(c=>c.tipo==='comportamental');
+  const tec  = r.por_criterio.filter(c=>c.tipo==='tecnico');
+
+  html += '<div style="font-size:10px;font-weight:700;color:var(--mu);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">Por critério</div>';
+  html += '<div style="display:flex;gap:12px;font-size:10px;color:var(--mu);margin-bottom:8px">'
+    + '<span><span class="nota-chip nc-auto" style="font-size:9px">A</span> Auto</span>'
+    + '<span><span class="nota-chip nc-aval" style="font-size:9px">V</span> Avaliador</span>'
+    + (r.com_supervisor ? '<span><span class="nota-chip nc-sup" style="font-size:9px">S</span> Supervisor</span>' : '')
+    + '<span><span class="nota-chip nc-final" style="font-size:9px">F</span> Final</span>'
+    + '</div>';
+
+  if(comp.length){
+    html += '<div style="font-size:10px;font-weight:700;color:#4a7a2a;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px">Comportamental</div>';
+    html += '<div class="res-crit-lista">' + comp.map(c=>critRow(c, r.com_supervisor)).join('') + '</div>';
+  }
+  if(tec.length){
+    html += '<div style="font-size:10px;font-weight:700;color:#4a7a2a;margin-bottom:4px;text-transform:uppercase;letter-spacing:.3px;margin-top:12px">Técnica</div>';
+    html += '<div class="res-crit-lista">' + tec.map(c=>critRow(c, r.com_supervisor)).join('') + '</div>';
+  }
+
+  // Feedback qualitativo
+  const fb = feedback_avaliador;
+  if(fb.pontos_fortes || fb.pontos_melhoria || fb.plano_acao){
+    html += `<div class="res-feedback">
+      <div class="res-feedback-titulo">Feedback do avaliador</div>
+      ${fb.pontos_fortes   ? `<div class="res-feedback-secao"><b>Pontos fortes</b>${esc(fb.pontos_fortes)}</div>`:''}
+      ${fb.pontos_melhoria ? `<div class="res-feedback-secao"><b>Pontos a melhorar</b>${esc(fb.pontos_melhoria)}</div>`:''}
+      ${fb.plano_acao      ? `<div class="res-feedback-secao"><b>Plano de ação</b>${esc(fb.plano_acao)}</div>`:''}
+    </div>`;
+  }
+
+  document.getElementById('resultado-body').innerHTML = html;
+}
+
+function blocoMedia(titulo, auto, aval, sup, final, comSup){
+  const barra = (val, cor) => val != null
+    ? `<div class="res-barra-track"><div class="res-barra-fill" style="width:${(val/5)*100}%;background:${cor}"></div></div>`
+    : `<div class="res-barra-track"></div>`;
+  return `<div class="res-media-card">
+    <div class="res-media-titulo">${titulo}</div>
+    <div class="res-barra-row">${barra(auto,'#7AC143')} <span class="res-barra-val">${auto!=null?auto.toFixed(1):'–'}</span><span style="font-size:10px;color:var(--mu)">Auto</span></div>
+    <div class="res-barra-row">${barra(aval,'#1a5a8a')} <span class="res-barra-val">${aval!=null?aval.toFixed(1):'–'}</span><span style="font-size:10px;color:var(--mu)">Aval.</span></div>
+    ${comSup ? `<div class="res-barra-row">${barra(sup,'#8a4a1a')} <span class="res-barra-val">${sup!=null?sup.toFixed(1):'–'}</span><span style="font-size:10px;color:var(--mu)">Sup.</span></div>` : ''}
+    <div class="res-barra-row">${barra(final,'#0D2614')} <span class="res-barra-val" style="color:#0D2614;font-weight:900">${final!=null?final.toFixed(2):'–'}</span><span style="font-size:10px;font-weight:700;color:#0D2614">Final</span></div>
+  </div>`;
+}
+
+function critRow(c, comSup){
+  const chip = (val, cls) => val != null
+    ? `<span class="nota-chip ${cls}">${val}</span>`
+    : `<span class="nota-chip" style="background:var(--b1);color:var(--mu)">–</span>`;
+  return `<div class="res-crit-row">
+    <div class="res-crit-desc">${esc(c.descricao)}</div>
+    ${chip(c.nota_auto,'nc-auto')}
+    ${chip(c.nota_aval,'nc-aval')}
+    ${comSup ? chip(c.nota_sup,'nc-sup') : ''}
+    ${chip(c.nota_final,'nc-final')}
+  </div>`;
+}
+
+// ── GATILHOS AUTOMÁTICOS — Fatia F ───────────────────────────────────────
+function _atualizarBotoesGatilhos(){
+  const ex = EU?.papeis_extras || [];
+  const podeRodar = EU?.papel==='coordenador' || ex.includes('rh_coordenador');
+  const btn = document.getElementById('btn-rodar-gatilhos');
+  if(btn) btn.style.display = podeRodar ? '' : 'none';
+}
+
+async function rodarGatilhos(){
+  if(!confirm('Rodar verificação de gatilhos agora? Ciclos serão criados e e-mails enviados.')) return;
+  const btn = document.getElementById('btn-rodar-gatilhos');
+  btn.disabled = true; btn.textContent = 'Rodando…';
+  try{
+    const d = await apiDesempenho('POST', '/admin/gatilhos/rodar-agora', {});
+    const msg = d.ciclos_disparados
+      ? `✅ ${d.ciclos_disparados} ciclo(s) disparado(s):\n` +
+        d.detalhes.map(x=>`• ${x.colaborador} — ${CICLO_TIPO_LABEL[x.tipo]||x.tipo}`).join('\n')
+      : `✓ Nenhum ciclo a disparar hoje (${d.colaboradores_verificados} colaborador(es) verificado(s)).`;
+    alert(msg);
+    await carregarCiclos();
+    await carregarLogGatilhos();
+  }catch(e){ toast('Erro: '+e.message); }
+  finally{ btn.disabled=false; btn.textContent='▶ Rodar agora'; }
+}
+
+async function carregarLogGatilhos(){
+  const el = document.getElementById('av-gatilhos-log');
+  try{
+    const d = await apiDesempenho('GET', '/admin/gatilhos/log?limite=10');
+    const log = d.log || [];
+    if(!log.length){
+      el.innerHTML = '<span style="color:var(--mu)">Nenhum disparo automático registrado ainda.</span>';
+      return;
+    }
+    el.innerHTML = '<div style="display:flex;flex-direction:column;gap:5px">'
+      + log.map(l=>{
+          const tipo = CICLO_TIPO_LABEL[l.tipo] || l.tipo;
+          const dt   = (l.disparado_em||'').slice(0,16).replace('T',' ');
+          return `<div style="display:flex;align-items:center;gap:8px;padding:5px 8px;background:var(--f1);border-radius:6px;font-size:11px">
+            <span style="font-weight:700;color:var(--g2)">⚡</span>
+            <span style="flex:1">${esc(l.colaborador_nome)} — <b>${tipo}</b></span>
+            <span style="color:var(--mu)">${dt}</span>
+          </div>`;
+        }).join('')
+      + `</div><div style="color:var(--mu);margin-top:6px">Mostrando últimos 10 de ${d.total} registros.</div>`;
+  }catch(e){ el.textContent = 'Erro ao carregar log: '+e.message; }
+}
+
+// ── PAINEL DE ACOMPANHAMENTO — Fatia G ───────────────────────────────────
+let ACOMP_DADOS = null;
+
+async function carregarAcompanhamento(){
+  const setor = document.getElementById('acomp-filtro-setor')?.value || '';
+  let rota = '/acompanhamento';
+  if(setor) rota += '?setor='+encodeURIComponent(setor);
+  try{
+    ACOMP_DADOS = await apiDesempenho('GET', rota);
+    renderAcompanhamento(ACOMP_DADOS);
+  }catch(e){ toast('Erro ao carregar acompanhamento: '+e.message); }
+}
+
+function renderAcompanhamento(d){
+  const {kpis, colaboradores, por_setor} = d;
+
+  // KPIs
+  document.getElementById('acomp-k-ativos').textContent    = kpis.colaboradores_ativos ?? '–';
+  document.getElementById('acomp-k-semciclo').textContent  = kpis.sem_ciclo_ativo ?? '–';
+  const mediaEl = document.getElementById('acomp-k-media');
+  const classifEl = document.getElementById('acomp-k-classif');
+  if(kpis.media_empresa_12m != null){
+    mediaEl.textContent   = kpis.media_empresa_12m.toFixed(2);
+    mediaEl.style.color   = COR_CLASSIF[kpis.classificacao_empresa] || 'var(--tx)';
+    classifEl.textContent = kpis.classificacao_empresa + ` (${kpis.ciclos_encerrados_12m} ciclos)`;
+  } else {
+    mediaEl.textContent = '–';
+    classifEl.textContent = 'sem dados de ciclos encerrados';
+  }
+
+  // Por setor
+  const setoresEl = document.getElementById('acomp-setores');
+  if(por_setor.length){
+    setoresEl.innerHTML = por_setor.map(s=>{
+      const cor = COR_CLASSIF[s.classificacao] || 'var(--tx)';
+      const setorClass = SETOR_BADGE[s.setor] || 'sb-ad';
+      return `<div class="setor-kpi">
+        <span class="setor-badge ${setorClass} setor-kpi-nome">${esc(s.setor)}</span>
+        <span class="setor-kpi-media" style="color:${cor}">${s.media.toFixed(2)}</span>
+        <span class="setor-kpi-classif">${s.ciclos_encerrados} ciclos</span>
+      </div>`;
+    }).join('');
+  } else {
+    setoresEl.innerHTML = '<span style="font-size:12px;color:var(--mu)">Nenhum ciclo encerrado ainda — médias por setor indisponíveis.</span>';
+  }
+
+  // Lista de colaboradores
+  const lbl = document.getElementById('acomp-total-label');
+  if(lbl) lbl.textContent = `${colaboradores.length} colaborador(es)`;
+
+  const el = document.getElementById('acomp-colab-lista');
+  if(!colaboradores.length){
+    el.innerHTML = '<div class="empty"><b>Nenhum colaborador encontrado</b></div>';
+    return;
+  }
+
+  el.innerHTML = colaboradores.map(c=>{
+    const ini = iniciais(c.nome);
+    const cor = colabCorAv(c.id);
+    const setorClass = SETOR_BADGE[c.setor] || 'sb-ad';
+
+    // Badge ciclo ativo
+    let cicloBadge = '';
+    if(c.ciclo_ativo){
+      const ca = c.ciclo_ativo;
+      const etapas = (ca.etapa_auto?'✅':'○')+' Auto · '+(ca.etapa_aval?'✅':'○')+' Aval.';
+      const statusCls = 'cs-'+ca.status;
+      cicloBadge = `<span class="ciclo-status ${statusCls}" style="font-size:9px">${esc(ca.tipo_label)}</span>
+        <span style="font-size:10px;color:var(--mu)">${etapas}</span>`;
+    } else {
+      cicloBadge = '<span style="font-size:10px;color:var(--mu)">Sem ciclo ativo</span>';
+    }
+
+    // Último resultado
+    let ultimoResult = '';
+    if(c.ultimo_encerrado){
+      const ue = c.ultimo_encerrado;
+      const corR = COR_CLASSIF[ue.classificacao] || 'var(--tx)';
+      ultimoResult = `<span style="font-size:11px;font-weight:700;color:${corR}">`
+        + (ue.media_geral != null ? ue.media_geral.toFixed(2) : '–') + `</span>`
+        + `<span style="font-size:10px;color:var(--mu)"> ${esc(ue.tipo_label)} · ${ue.encerrado_em||''}</span>`;
+    } else {
+      ultimoResult = '<span style="font-size:10px;color:var(--mu)">Sem avaliações encerradas</span>';
+    }
+
+    // Histórico dots
+    const dots = (c.historico||[]).map(h=>{
+      let cls = 'hd-pend';
+      if(h.status==='em_andamento') cls='hd-and';
+      if(h.status==='encerrado' && h.media_geral!=null){
+        const n = Math.round(h.media_geral);
+        cls = `hd-enc-${Math.max(1,Math.min(5,n))}`;
+      }
+      const label = CICLO_TIPO_LABEL[h.tipo]||h.tipo;
+      return `<div class="hist-dot ${cls}" title="${label} · ${h.status}${h.media_geral!=null?' · '+h.media_geral.toFixed(2):''}"></div>`;
+    }).join('');
+
+    // Próximo gatilho
+    let proximoBadge = '';
+    if(c.proximo_gatilho){
+      const pg = c.proximo_gatilho;
+      const urgente = pg.dias_restantes <= 7;
+      const sinal = urgente ? '⚠' : '⏱';
+      proximoBadge = `<span class="prox-badge${urgente?' urgente':''}">${sinal} ${esc(pg.tipo_label)}: ${pg.dias_restantes>=0?pg.dias_restantes+'d':Math.abs(pg.dias_restantes)+'d atrás'}</span>`;
+    }
+
+    return `<div class="acomp-row">
+      <div class="av" style="width:36px;height:36px;font-size:12px;background:${cor};border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#fff;font-weight:700">${ini}</div>
+      <div>
+        <div class="acomp-nome">${esc(c.nome)}</div>
+        <div class="acomp-meta">
+          <span>${esc(c.cargo)}</span>
+          <span class="setor-badge ${setorClass}">${esc(c.setor)}</span>
+          <span>👤 ${esc(c.avaliador_nome)}</span>
+          ${c.media_historica!=null?`<span style="font-weight:700;color:${COR_CLASSIF[c.ultimo_encerrado?.classificacao]||'var(--tx)'}">${c.media_historica.toFixed(2)} média</span>`:''}
+        </div>
+        <div style="margin-top:6px;display:flex;gap:14px;align-items:center;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column;gap:2px">${cicloBadge}</div>
+          <div style="display:flex;flex-direction:column;gap:2px">${ultimoResult}</div>
+        </div>
+      </div>
+      <div class="acomp-direita">
+        <div class="acomp-hist">${dots}</div>
+        ${proximoBadge}
+        <button class="btn btn-gh" style="font-size:10px;padding:3px 10px;margin-top:2px"
+          onclick="trocarSubAv('ciclos');setTimeout(()=>{ document.getElementById('ciclo-colab-id-filtro-temp')?.click(); },100)">Ver ciclos</button>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ── FIT ANALYSIS — redirecionamento por melhor vaga (Fatia 10) ───────────
+function renderFitSugestoes(c){
+  const container = document.getElementById('m-fit-sugestoes');
+  if(!container) return;
+  const fits = (c.fit_sugestoes||[]).filter(f=>!f.ignorado);
+  if(!fits.length){ container.style.display='none'; return; }
+
+  container.style.display='';
+  container.innerHTML = `
+    <div style="font-size:11px;font-weight:700;color:var(--or);text-transform:uppercase;letter-spacing:.5px;margin-bottom:8px">
+      ⚡ Melhor fit detectado em outra vaga
+    </div>
+    ${fits.map(f=>`
+      <div style="background:#fff8f0;border:1px solid #f5d6b0;border-radius:8px;padding:10px 14px;margin-bottom:8px;display:flex;align-items:center;gap:10px">
+        <div style="flex:1">
+          <div style="font-size:13px;font-weight:700;color:var(--tx)">${esc(f.cargo)}</div>
+          <div style="font-size:11px;color:var(--mu)">
+            Pontuação: <b>${f.pontuacao}pts</b> vs ${c.pontuacao_ia??'–'}pts nesta vaga
+            <span style="color:var(--g2);font-weight:700"> (+${f.diferenca}pts)</span>
+          </div>
+        </div>
+        <button class="btn" style="font-size:11px;padding:5px 12px;background:var(--g);color:#fff;border:none;border-radius:7px;cursor:pointer"
+          onclick="redirecionarCandidato(${f.vaga_id},'${esc(f.cargo)}')">⚡ Redirecionar</button>
+        <button class="btn btn-gh" style="font-size:10px;padding:5px 8px"
+          onclick="ignorarFit(${f.vaga_id})">Ignorar</button>
+      </div>
+    `).join('')}`;
+}
+
+async function redirecionarCandidato(nova_vaga_id, cargo_destino){
+  if(!confirm(`Redirecionar ${CAND_ATUAL.nome} para a vaga "${cargo_destino}"?\n\nO candidato irá para o Banco de Talentos desta vaga e uma nova candidatura será criada na vaga de destino.`)) return;
+  try{
+    const d = await api('POST', `/vagas/${CAND_ATUAL.vaga_id}/candidatos/${CAND_ATUAL.id}/redirecionar?nova_vaga_id=${nova_vaga_id}`, {});
+    toast(d.mensagem || 'Candidato redirecionado!');
+    document.getElementById('ov-ver-cand').classList.remove('open');
+    await carregarTudo();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+async function ignorarFit(vaga_fit_id){
+  try{
+    await api('PATCH', `/vagas/${CAND_ATUAL.vaga_id}/candidatos/${CAND_ATUAL.id}/ignorar-fit?vaga_fit_id=${vaga_fit_id}`, {});
+    toast('Sugestão ignorada.');
+    // atualizar o painel sem recarregar tudo
+    CAND_ATUAL.fit_sugestoes = (CAND_ATUAL.fit_sugestoes||[]).map(f=>
+      f.vaga_id===vaga_fit_id ? {...f, ignorado:true} : f
+    );
+    renderFitSugestoes(CAND_ATUAL);
+    if(KB_VAGA_ID) renderKanban();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// helper api para rotas de desempenho — prefixo diferente do helper principal
+async function apiDesempenho(metodo, rota, corpo){
+  const opts = { method:metodo, credentials:'include',
+                 headers:{'Content-Type':'application/json'} };
+  if(corpo) opts.body = JSON.stringify(corpo);
+  const r = await fetch('/api/rh/desempenho'+rota, opts);
+  if(!r.ok){ const d=await r.json().catch(()=>({})); throw new Error(d.detail||r.statusText); }
+  return r.json();
+}
+
+// Mostrar/ocultar botão "Novo colaborador" conforme papel
+function _atualizarBotoesAvaliacoes(){
+  const ex = EU?.papeis_extras || [];
+  const pode = EU?.papel==='coordenador'
+    || ex.some(p=>['rh_operador','rh_coordenador'].includes(p));
+  const btn = document.getElementById('av-btn-novo');
+  if(btn) btn.style.display = pode ? '' : 'none';
+}
+
+// Carregar ao clicar na aba
+document.addEventListener('DOMContentLoaded', ()=>{
+  const tabAv = document.querySelector('.tab[data-tab="avaliacoes"]');
+  if(tabAv) tabAv.addEventListener('click', ()=>{
+    _atualizarBotoesAvaliacoes();
+    setTimeout(carregarColaboradores, 80);
+  });
+});
+
+// ── CATÁLOGO DE CARGOS (Fatia 10) ────────────────────────────────────────
+let CARGOS_CATALOGO = [];    // [{id, nome, tipo, multi_nivel, salario_min, ...}]
+let NIVEIS_CATALOGO = {};    // {A1: 1621, A2: 1702, ...}
+let CARGO_SELECIONADO = null; // cargo do catálogo em uso na Nova Vaga
+
+async function carregarCatalogoCargos(){
+  if(CARGOS_CATALOGO.length) return;
+  try{
+    const d = await api('GET', '/cargos');
+    CARGOS_CATALOGO = d.cargos || [];
+    NIVEIS_CATALOGO = d.niveis || {};
+    // popular o select de Nova Vaga
+    const sel = document.getElementById('vaga-cargo-id');
+    if(!sel) return;
+    // remover opções antigas exceto as 2 fixas
+    while(sel.options.length > 2) sel.remove(2);
+    // agrupar por tipo
+    const grupos = {};
+    CARGOS_CATALOGO.forEach(c=>{
+      if(!grupos[c.tipo]) grupos[c.tipo]=[];
+      grupos[c.tipo].push(c);
+    });
+    const labels = {clt:'CLT', pj:'PJ', estagio:'Estágio'};
+    ['estagio','clt','pj'].forEach(tipo=>{
+      if(!grupos[tipo]) return;
+      const og = document.createElement('optgroup');
+      og.label = labels[tipo] || tipo;
+      grupos[tipo].forEach(c=>{
+        const opt = document.createElement('option');
+        opt.value = c.id; opt.textContent = c.nome;
+        og.appendChild(opt);
+      });
+      sel.appendChild(og);
+    });
+  }catch(e){ console.warn('Catálogo de cargos indisponível:', e.message); }
+}
+
+function selecionarCargo(valor){
+  const cargoInput = document.getElementById('vaga-cargo');
+  const infoDiv    = document.getElementById('vaga-cargo-info');
+
+  if(valor === '_outro' || valor === ''){
+    cargoInput.style.display = valor === '_outro' ? '' : 'none';
+    if(valor === '_outro') cargoInput.focus();
+    infoDiv.style.display = 'none';
+    CARGO_SELECIONADO = null;
+    return;
+  }
+  cargoInput.style.display = 'none';
+
+  const cargo = CARGOS_CATALOGO.find(c=>c.id===valor);
+  if(!cargo){ infoDiv.style.display='none'; CARGO_SELECIONADO=null; return; }
+  CARGO_SELECIONADO = cargo;
+
+  // Preencher painel de informações
+  const salEl  = document.getElementById('vci-salario');
+  const benEl  = document.getElementById('vci-beneficios');
+  const horEl  = document.getElementById('vci-horario');
+
+  if(cargo.tipo==='estagio' && cargo.bolsa_fixa){
+    salEl.textContent = `💰 Bolsa: R$ ${fmtBRL(cargo.bolsa_fixa)}`;
+  } else if(cargo.salario_min && cargo.salario_max){
+    if(cargo.multi_nivel){
+      salEl.textContent = `💰 Salário: R$ ${fmtBRL(cargo.salario_min)} a R$ ${fmtBRL(cargo.salario_max)} (nível definido na avaliação técnica)`;
+    } else {
+      salEl.textContent = `💰 Salário: R$ ${fmtBRL(cargo.salario_min)}`;
+    }
+  } else {
+    salEl.textContent = '';
+  }
+
+  const ben = cargo.beneficios || {};
+  const benPartes = [];
+  if(ben.vale_transporte) benPartes.push('VT');
+  if(ben.vale_alimentacao) benPartes.push(`VA (${ben.vale_alimentacao})`);
+  if(ben.seguro_vida)     benPartes.push('Seguro de Vida');
+  if(ben.sesc)            benPartes.push('SESC');
+  benEl.textContent = benPartes.length ? `🎁 Benefícios: ${benPartes.join(' · ')}` : '';
+  horEl.textContent = cargo.horario ? `🕐 ${cargo.horario}` : '';
+  infoDiv.style.display = '';
+
+  // Auto-preencher requisitos e diferenciais se estiverem vazios
+  const reqEl = document.getElementById('vaga-req');
+  const difEl = document.getElementById('vaga-dif');
+  if(reqEl && !reqEl.value.trim() && cargo.requisitos_catalogo?.length)
+    reqEl.value = cargo.requisitos_catalogo.join('\n');
+  if(difEl && !difEl.value.trim() && cargo.diferenciais_catalogo?.length)
+    difEl.value = cargo.diferenciais_catalogo.join('\n');
+}
+
+function fmtBRL(v){
+  return Number(v).toLocaleString('pt-BR',{minimumFractionDigits:2,maximumFractionDigits:2});
+}
+
+function abrirModalVaga(){
+  carregarCatalogoCargos();
+  // resetar campos
+  const sel = document.getElementById('vaga-cargo-id');
+  if(sel) sel.value = '';
+  const ci = document.getElementById('vaga-cargo');
+  if(ci){ ci.value=''; ci.style.display='none'; }
+  document.getElementById('vaga-cargo-info').style.display='none';
+  CARGO_SELECIONADO = null;
+  ['vaga-solicitante','vaga-obs'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  ['vaga-req','vaga-dif'].forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.getElementById('ov-vaga').classList.add('open');
+}
+
+async function criarVaga(){
+  const cargoId  = document.getElementById('vaga-cargo-id')?.value;
+  const cargoTxt = document.getElementById('vaga-cargo')?.value.trim();
+  // determinar nome do cargo
+  let cargoNome = '';
+  if(cargoId && cargoId !== '_outro' && cargoId !== ''){
+    const c = CARGOS_CATALOGO.find(x=>x.id===cargoId);
+    cargoNome = c ? c.nome : cargoId;
+  } else {
+    cargoNome = cargoTxt;
+  }
+  if(!cargoNome){ toast('Selecione ou informe o cargo.'); return; }
+
+  const sol = document.getElementById('vaga-solicitante')?.value.trim();
+  if(!sol){ toast('Informe o solicitante.'); return; }
+
+  const req = (document.getElementById('vaga-req')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const dif = (document.getElementById('vaga-dif')?.value||'').split('\n').map(s=>s.trim()).filter(Boolean);
+  const obs = document.getElementById('vaga-obs')?.value.trim()||'';
+
+  const corpo = {
+    cargo:      cargoNome,
+    cargo_id:   (cargoId && cargoId !== '_outro') ? cargoId : null,
+    solicitante: sol,
+    requisitos:  req,
+    diferenciais: dif,
+    observacoes: obs || null,
+  };
+  try{
+    await api('POST', '/vagas', corpo);
+    toast('Vaga criada com sucesso!');
+    fecharOverlay('ov-vaga');
+    await carregarTudo();
+  }catch(e){ toast('Erro: '+e.message); }
+}
+
+// ── APROVAÇÃO COM NÍVEL (Fatia 10) ───────────────────────────────────────
+let APROV_VAGA_DADOS = null;
+
+function abrirAprovacaoNivel(vid, cid, nomeCandiato, vaga){
+  // Se o cargo não tem multi_nivel, aprovar direto
+  const cd = vaga.cargo_dados;
+  if(!cd || !cd.multi_nivel){
+    moverCandidato(vid, cid, 'aprovado', null);
+    return;
+  }
+  APROV_VAGA_DADOS = {vid, cid, cd};
+  document.getElementById('aprov-vid').value = vid;
+  document.getElementById('aprov-cid').value = cid;
+  document.getElementById('aprov-nome').textContent = nomeCandiato;
+  document.getElementById('aprov-cargo').textContent = `${vaga.cargo} · Selecione o nível de contratação`;
+
+  // Montar opções de nível
+  const sel = document.getElementById('aprov-nivel');
+  sel.innerHTML = '<option value="">Selecione o nível…</option>';
+  const nMin = cd.nivel_min, nMax = cd.nivel_max;
+  const letras = ['A','B','C','D'];
+  let dentroFaixa = false;
+  for(const letra of letras){
+    const maxNum = letra==='A'?6:letra==='B'?7:letra==='C'?15:10;
+    for(let n=1;n<=maxNum;n++){
+      const niv = `${letra}${n}`;
+      if(niv===nMin) dentroFaixa=true;
+      if(dentroFaixa && NIVEIS_CATALOGO[niv]){
+        const opt = document.createElement('option');
+        opt.value = niv;
+        opt.textContent = `${niv} — R$ ${fmtBRL(NIVEIS_CATALOGO[niv])}`;
+        sel.appendChild(opt);
+      }
+      if(niv===nMax) dentroFaixa=false;
+    }
+  }
+  document.getElementById('aprov-salario-label').textContent = '';
+  document.getElementById('ov-aprovar-nivel').classList.add('open');
+}
+
+function atualizarSalarioNivel(){
+  const sel = document.getElementById('aprov-nivel');
+  const niv = sel.value;
+  const label = document.getElementById('aprov-salario-label');
+  if(niv && NIVEIS_CATALOGO[niv]){
+    label.textContent = `Salário: R$ ${fmtBRL(NIVEIS_CATALOGO[niv])}`;
+  } else {
+    label.textContent = '';
+  }
+}
+
+async function confirmarAprovacaoNivel(){
+  const vid  = parseInt(document.getElementById('aprov-vid').value);
+  const cid  = parseInt(document.getElementById('aprov-cid').value);
+  const niv  = document.getElementById('aprov-nivel').value;
+  if(!niv){ toast('Selecione o nível de contratação.'); return; }
+  const salario = NIVEIS_CATALOGO[niv] || null;
+  fecharOverlay('ov-aprovar-nivel');
+  await moverCandidato(vid, cid, 'aprovado', null, niv, salario);
+}
+
+// ── INIT ──────────────────────────────────────────────────────────────────
+verificarSessao();
+</script>
+</body>
+</html>

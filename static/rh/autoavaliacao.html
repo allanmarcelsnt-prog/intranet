@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Autoavaliação de Desempenho · Safenet Tecnologia</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4ed;min-height:100vh;padding:24px 16px 48px}
+  .wrap{max-width:640px;margin:0 auto}
+  .hdr{background:#0D2614;border-radius:12px 12px 0 0;padding:18px 24px;display:flex;align-items:center;gap:14px}
+  .hdr-marca{color:#7AC143;font-size:18px;font-weight:800;font-family:'Segoe UI',sans-serif;letter-spacing:-.3px}
+  .hdr-sub{color:#aed68a;font-size:12px}
+  .card{background:#fff;border:1px solid #dde8d5;border-top:none;border-radius:0 0 12px 12px;padding:28px 24px}
+  .saudacao{font-size:16px;font-weight:700;color:#0D2614;margin-bottom:4px}
+  .subtitulo{font-size:13px;color:#555;margin-bottom:24px}
+  .secao-titulo{font-size:11px;font-weight:800;color:#4a7a2a;text-transform:uppercase;letter-spacing:.7px;margin:24px 0 14px;padding:8px 12px;background:#f0f7e8;border-left:3px solid #7AC143;border-radius:0 6px 6px 0}
+  .criterio{margin-bottom:20px;padding:14px;background:#fafafa;border-radius:8px;border:1px solid #e8eedf}
+  .criterio-desc{font-size:13px;font-weight:600;color:#222;margin-bottom:10px}
+  .aplicavel{font-size:10px;color:#7a9a5a;font-weight:600;margin-bottom:8px}
+  .escala{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .nota-btn{flex:1;min-width:48px;padding:8px 4px;border:2px solid #dde8d5;border-radius:8px;background:#fff;cursor:pointer;text-align:center;transition:all .15s;font-size:12px;font-weight:700;color:#555;font-family:inherit}
+  .nota-btn:hover{border-color:#7AC143;color:#4a7a2a}
+  .nota-btn.sel{border-color:#7AC143;background:#7AC143;color:#fff}
+  .nota-label{font-size:10px;color:#aaa;text-align:center;margin-top:2px;height:14px}
+  .obs-input{width:100%;padding:8px 10px;border:1px solid #dde8d5;border-radius:6px;font-size:12px;color:#333;resize:vertical;min-height:48px;font-family:inherit;margin-top:6px}
+  .obs-input:focus{outline:none;border-color:#7AC143}
+  .obs-geral{width:100%;padding:10px 12px;border:1px solid #dde8d5;border-radius:8px;font-size:13px;resize:vertical;min-height:80px;font-family:inherit;margin-top:8px}
+  .obs-geral:focus{outline:none;border-color:#7AC143}
+  .btn-enviar{width:100%;background:#7AC143;color:#fff;border:none;padding:16px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:28px;font-family:inherit;transition:background .15s}
+  .btn-enviar:hover{background:#5fa030}
+  .btn-enviar:disabled{background:#b0d48a;cursor:not-allowed}
+  .msg{padding:16px;border-radius:10px;font-size:13px;margin-top:16px;display:none}
+  .msg.ok{background:#e8f5d6;color:#2d6a0a;border:1px solid #b8dca0;display:block}
+  .msg.err{background:#fde8e8;color:#a00;border:1px solid #f5b8b8;display:block}
+  .loading{text-align:center;padding:60px 0;color:#7a9a5a;font-size:14px}
+  .prazo-badge{display:inline-block;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:6px;font-size:11px;font-weight:700;padding:4px 10px;margin-left:8px}
+  .progresso{font-size:11px;color:#7a9a5a;margin-top:12px;text-align:right}
+  #tela-sucesso{display:none;text-align:center;padding:40px 0}
+  .sucesso-icone{font-size:56px;margin-bottom:16px}
+  .sucesso-titulo{font-size:20px;font-weight:800;color:#0D2614;margin-bottom:8px}
+  .sucesso-msg{font-size:14px;color:#555}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div>
+      <div class="hdr-marca">SAFENET TECNOLOGIA</div>
+      <div class="hdr-sub">Avaliação de Desempenho</div>
+    </div>
+  </div>
+  <div class="card">
+    <!-- Estado: carregando -->
+    <div class="loading" id="tela-loading">Carregando sua avaliação…</div>
+
+    <!-- Estado: erro -->
+    <div class="msg err" id="tela-erro" style="display:none"></div>
+
+    <!-- Estado: formulário -->
+    <div id="tela-form" style="display:none">
+      <div class="saudacao" id="saudacao"></div>
+      <div class="subtitulo" id="subtitulo"></div>
+      <div id="criterios-container"></div>
+      <div class="secao-titulo">Observação geral</div>
+      <textarea class="obs-geral" id="obs-geral" rows="4"
+        placeholder="Comente livremente sobre seu desempenho, conquistas e desafios no período…"></textarea>
+      <div class="progresso" id="progresso-label"></div>
+      <div class="msg err" id="msg-erro-envio" style="margin-top:12px"></div>
+      <button class="btn-enviar" id="btn-enviar" onclick="enviarAutoavaliacao()">
+        ✓ Enviar minha autoavaliação
+      </button>
+    </div>
+
+    <!-- Estado: sucesso -->
+    <div id="tela-sucesso">
+      <div class="sucesso-icone">✅</div>
+      <div class="sucesso-titulo">Autoavaliação enviada!</div>
+      <div class="sucesso-msg">Obrigado pela sua participação.<br>O RH e seu avaliador darão continuidade ao processo.</div>
+    </div>
+  </div>
+</div>
+
+<script>
+const LABELS = {1:'Muito abaixo',2:'Abaixo',3:'No esperado',4:'Acima',5:'Muito acima'};
+let DADOS = null;
+const token = new URLSearchParams(location.search).get('token') || '';
+
+async function carregar(){
+  if(!token){
+    mostrarErro('Link inválido. Verifique o e-mail recebido.');
+    return;
+  }
+  try{
+    const r = await fetch(`/api/rh/desempenho/public/autoavaliacao/${token}`);
+    if(r.status===409){ mostrarSucesso(); return; } // já preenchida
+    if(!r.ok){
+      const d = await r.json().catch(()=>({}));
+      mostrarErro(d.detail || 'Link inválido ou expirado. Entre em contato com o RH.');
+      return;
+    }
+    DADOS = await r.json();
+    renderForm();
+  }catch(e){
+    mostrarErro('Falha de conexão. Tente novamente em alguns instantes.');
+  }
+}
+
+function mostrarErro(msg){
+  document.getElementById('tela-loading').style.display='none';
+  const el = document.getElementById('tela-erro');
+  el.textContent = msg;
+  el.style.display = 'block';
+}
+function mostrarSucesso(){
+  document.getElementById('tela-loading').style.display='none';
+  document.getElementById('tela-form').style.display='none';
+  document.getElementById('tela-sucesso').style.display='block';
+}
+
+function renderForm(){
+  document.getElementById('tela-loading').style.display='none';
+  const {colaborador, ciclo} = DADOS;
+  document.getElementById('saudacao').textContent = `Olá, ${colaborador.nome}!`;
+  document.getElementById('subtitulo').innerHTML =
+    `${ciclo.tipo_label} · ${colaborador.cargo} · ${colaborador.setor}` +
+    (ciclo.prazo ? `<span class="prazo-badge">Prazo: ${fmt(ciclo.prazo)}</span>` : '');
+
+  const cont = document.getElementById('criterios-container');
+  cont.innerHTML =
+    secao('🤝 Critérios Comportamentais',
+          'Aplicáveis a todos os colaboradores.',
+          DADOS.criterios_comportamentais, 'comp') +
+    secao('🔧 Critérios Técnicos',
+          `Específicos para o setor de ${colaborador.setor}.`,
+          DADOS.criterios_tecnicos, 'tec');
+
+  document.getElementById('tela-form').style.display='block';
+  atualizarProgresso();
+}
+
+function secao(titulo, sub, criterios, prefixo){
+  if(!criterios.length) return '';
+  const itens = criterios.map((c,i)=>{
+    const tags = (c.aplicavel_a||[]).length
+      ? `<div class="aplicavel">Aplicável a: ${c.aplicavel_a.join(', ')}</div>` : '';
+    const bts = [1,2,3,4,5].map(n=>
+      `<div>
+        <button class="nota-btn" id="btn-${prefixo}-${c.id}-${n}"
+          onclick="selecionarNota('${prefixo}','${c.id}',${n})">${n}</button>
+        <div class="nota-label">${n===3?'Esperado':''}</div>
+       </div>`
+    ).join('');
+    return `<div class="criterio" id="crit-${prefixo}-${c.id}">
+      <div class="criterio-desc">${i+1}. ${esc(c.descricao)}</div>
+      ${tags}
+      <div class="escala">${bts}</div>
+      <textarea class="obs-input" id="obs-${prefixo}-${c.id}" rows="1"
+        placeholder="Observação opcional…" oninput="autoResize(this)"></textarea>
+    </div>`;
+  }).join('');
+  return `<div class="secao-titulo">${titulo}<br>
+    <span style="font-size:10px;font-weight:400;text-transform:none;letter-spacing:0;color:#555">${sub}</span>
+  </div>${itens}`;
+}
+
+const notas = {};  // {prefixo_id: nota}
+
+function selecionarNota(prefixo, cid, nota){
+  const key = `${prefixo}_${cid}`;
+  notas[key] = nota;
+  // destacar botão selecionado
+  [1,2,3,4,5].forEach(n=>{
+    const btn = document.getElementById(`btn-${prefixo}-${cid}-${n}`);
+    if(btn) btn.classList.toggle('sel', n===nota);
+  });
+  atualizarProgresso();
+}
+
+function atualizarProgresso(){
+  const total = (DADOS.criterios_comportamentais.length + DADOS.criterios_tecnicos.length);
+  const preenchidos = Object.keys(notas).length;
+  document.getElementById('progresso-label').textContent =
+    `${preenchidos} de ${total} critério(s) avaliado(s)`;
+}
+
+async function enviarAutoavaliacao(){
+  const btn = document.getElementById('btn-enviar');
+  const errEl = document.getElementById('msg-erro-envio');
+  errEl.style.display='none';
+
+  // validar preenchimento completo
+  const faltando = [];
+  DADOS.criterios_comportamentais.forEach(c=>{
+    if(!notas[`comp_${c.id}`]) faltando.push(c.descricao);
+  });
+  DADOS.criterios_tecnicos.forEach(c=>{
+    if(!notas[`tec_${c.id}`]) faltando.push(c.descricao);
+  });
+  if(faltando.length){
+    errEl.textContent = `Avalie todos os critérios antes de enviar. Faltam: ${faltando.length} item(s).`;
+    errEl.style.display='block';
+    return;
+  }
+
+  btn.disabled = true;
+  btn.textContent = 'Enviando…';
+
+  const corpo = {
+    criterios_comportamentais: DADOS.criterios_comportamentais.map(c=>({
+      criterio_id: String(c.id),
+      nota:        notas[`comp_${c.id}`],
+      observacao:  document.getElementById(`obs-comp-${c.id}`)?.value.trim()||'',
+    })),
+    criterios_tecnicos: DADOS.criterios_tecnicos.map(c=>({
+      criterio_id: String(c.id),
+      nota:        notas[`tec_${c.id}`],
+      observacao:  document.getElementById(`obs-tec-${c.id}`)?.value.trim()||'',
+    })),
+    observacao_geral: document.getElementById('obs-geral').value.trim(),
+  };
+
+  try{
+    const r = await fetch(`/api/rh/desempenho/public/autoavaliacao/${token}`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body: JSON.stringify(corpo),
+    });
+    if(r.ok){ mostrarSucesso(); return; }
+    const d = await r.json().catch(()=>({}));
+    errEl.textContent = d.detail || 'Erro ao enviar. Tente novamente.';
+    errEl.style.display='block';
+    btn.disabled=false;
+    btn.textContent='✓ Enviar minha autoavaliação';
+  }catch(e){
+    errEl.textContent='Falha de conexão. Tente novamente.';
+    errEl.style.display='block';
+    btn.disabled=false;
+    btn.textContent='✓ Enviar minha autoavaliação';
+  }
+}
+
+function esc(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
+function fmt(iso){ if(!iso) return ''; const [a,m,d]=iso.split('-'); return `${d}/${m}/${a}`; }
+function autoResize(el){ el.style.height='auto'; el.style.height=el.scrollHeight+'px'; }
+
+carregar();
+</script>
+</body>
+</html>

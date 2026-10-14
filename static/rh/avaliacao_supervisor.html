@@ -1,0 +1,192 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Co-avaliação · Supervisor · Safenet</title>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Segoe UI',Arial,sans-serif;background:#f0f4ed;min-height:100vh;padding:24px 16px 48px}
+  .wrap{max-width:700px;margin:0 auto}
+  .hdr{background:#0D2614;border-radius:12px 12px 0 0;padding:18px 24px}
+  .hdr-marca{color:#7AC143;font-size:18px;font-weight:800}
+  .hdr-sub{color:#aed68a;font-size:12px}
+  .card{background:#fff;border:1px solid #dde8d5;border-top:none;border-radius:0 0 12px 12px;padding:28px 24px}
+  .saudacao{font-size:16px;font-weight:700;color:#0D2614;margin-bottom:4px}
+  .subtitulo{font-size:13px;color:#555;margin-bottom:24px}
+  .secao-titulo{font-size:11px;font-weight:800;color:#4a7a2a;text-transform:uppercase;letter-spacing:.7px;margin:24px 0 14px;padding:8px 12px;background:#f0f7e8;border-left:3px solid #7AC143;border-radius:0 6px 6px 0}
+  .ref-box{background:#f5f7f0;border:1px solid #e0e8d5;border-radius:8px;padding:12px 16px;margin-bottom:16px;font-size:12px}
+  .ref-title{font-weight:700;color:#0D2614;margin-bottom:8px;font-size:11px;text-transform:uppercase;letter-spacing:.3px}
+  .ref-row{display:flex;align-items:center;gap:8px;margin-bottom:6px;padding:5px 0;border-bottom:1px solid #e8eedf}
+  .ref-row:last-child{border-bottom:none;margin-bottom:0}
+  .ref-crit{flex:1;color:#333}
+  .nota-pill{display:inline-block;width:22px;height:22px;border-radius:50%;text-align:center;line-height:22px;font-size:11px;font-weight:800;flex-shrink:0}
+  .np-auto{background:#7AC143;color:#fff}
+  .np-aval{background:#0D2614;color:#fff}
+  .criterio{margin-bottom:16px;padding:14px;background:#fafafa;border-radius:8px;border:1px solid #e8eedf}
+  .criterio-desc{font-size:13px;font-weight:600;color:#222;margin-bottom:8px}
+  .notas-ref{font-size:11px;color:#666;margin-bottom:8px;display:flex;gap:12px}
+  .escala{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:8px}
+  .nota-btn{flex:1;min-width:48px;padding:8px 4px;border:2px solid #dde8d5;border-radius:8px;background:#fff;cursor:pointer;text-align:center;font-size:12px;font-weight:700;color:#555;font-family:inherit;transition:all .15s}
+  .nota-btn:hover{border-color:#7AC143;color:#4a7a2a}
+  .nota-btn.sel{border-color:#856404;background:#856404;color:#fff}
+  .obs-geral{width:100%;padding:10px 12px;border:1px solid #dde8d5;border-radius:8px;font-size:13px;resize:vertical;min-height:80px;font-family:inherit}
+  .obs-geral:focus{outline:none;border-color:#7AC143}
+  .btn-enviar{width:100%;background:#856404;color:#fff;border:none;padding:16px;border-radius:10px;font-size:15px;font-weight:700;cursor:pointer;margin-top:28px;font-family:inherit;transition:background .15s}
+  .btn-enviar:hover{background:#6b4e03}
+  .btn-enviar:disabled{background:#aaa;cursor:not-allowed}
+  .msg-err{padding:12px 16px;background:#fde8e8;color:#a00;border:1px solid #f5b8b8;border-radius:8px;font-size:13px;display:none;margin-top:12px}
+  .loading{text-align:center;padding:60px 0;color:#7a9a5a}
+  #tela-sucesso{display:none;text-align:center;padding:40px 0}
+  .prazo-badge{display:inline-block;background:#fff3cd;color:#856404;border:1px solid #ffc107;border-radius:6px;font-size:11px;font-weight:700;padding:4px 10px;margin-left:8px}
+  .progresso{font-size:11px;color:#7a9a5a;margin-top:12px;text-align:right}
+  .legend{display:flex;gap:12px;font-size:10px;color:#666;margin-bottom:8px}
+  .legend-dot{display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:4px;vertical-align:middle}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="hdr">
+    <div class="hdr-marca">SAFENET TECNOLOGIA</div>
+    <div class="hdr-sub">Avaliação de Desempenho · Co-avaliação do Supervisor de Campo</div>
+  </div>
+  <div class="card">
+    <div class="loading" id="tela-loading">Carregando co-avaliação…</div>
+    <div class="msg-err" id="tela-erro"></div>
+
+    <div id="tela-form" style="display:none">
+      <div class="saudacao" id="saudacao"></div>
+      <div class="subtitulo" id="subtitulo"></div>
+
+      <div class="legend">
+        <span><span class="legend-dot" style="background:#7AC143"></span>Auto</span>
+        <span><span class="legend-dot" style="background:#0D2614"></span>Avaliador</span>
+        <span><span class="legend-dot" style="background:#856404"></span>Sua nota</span>
+      </div>
+
+      <div id="criterios-container"></div>
+
+      <div class="secao-titulo">Observação geral</div>
+      <textarea class="obs-geral" id="obs-geral" rows="4"
+        placeholder="Adicione sua perspectiva de campo sobre o desempenho do colaborador…"></textarea>
+
+      <div class="progresso" id="progresso-label"></div>
+      <div class="msg-err" id="msg-erro-envio"></div>
+      <button class="btn-enviar" id="btn-enviar" onclick="enviar()">🏆 Enviar co-avaliação</button>
+    </div>
+
+    <div id="tela-sucesso">
+      <div style="font-size:56px;margin-bottom:16px">✅</div>
+      <div style="font-size:20px;font-weight:800;color:#0D2614;margin-bottom:8px">Co-avaliação registrada!</div>
+      <div style="font-size:14px;color:#555">Obrigado pela sua contribuição de campo.</div>
+    </div>
+  </div>
+</div>
+<script>
+const LABELS={1:'Muito abaixo',2:'Abaixo',3:'No esperado',4:'Acima',5:'Muito acima'};
+const notas={};
+let DADOS=null;
+const token=new URLSearchParams(location.search).get('token')||'';
+
+async function carregar(){
+  if(!token){ mostrarErro('Link inválido.'); return; }
+  try{
+    const r=await fetch(`/api/rh/desempenho/public/supervisor/${token}`);
+    if(r.status===409){ mostrarSucesso(); return; }
+    if(!r.ok){ const d=await r.json().catch(()=>({})); mostrarErro(d.detail||'Erro.'); return; }
+    DADOS=await r.json();
+    renderForm();
+  }catch(e){ mostrarErro('Falha de conexão.'); }
+}
+
+function mostrarErro(m){ document.getElementById('tela-loading').style.display='none'; const el=document.getElementById('tela-erro'); el.textContent=m; el.style.display='block'; }
+function mostrarSucesso(){ document.getElementById('tela-loading').style.display='none'; document.getElementById('tela-form').style.display='none'; document.getElementById('tela-sucesso').style.display='block'; }
+
+// índices de referência
+const AA={}, AV={};
+
+function renderForm(){
+  document.getElementById('tela-loading').style.display='none';
+  const {colaborador,ciclo}=DADOS;
+  document.getElementById('saudacao').textContent=`Co-avaliação de ${colaborador.nome}`;
+  document.getElementById('subtitulo').innerHTML=
+    `${ciclo.tipo_label} · ${colaborador.cargo} · ${colaborador.setor}`+
+    (ciclo.prazo?`<span class="prazo-badge">Prazo: ${fmt(ciclo.prazo)}</span>`:'');
+
+  (DADOS.autoavaliacao.criterios_comportamentais||[]).forEach(i=>{ AA[`comp_${i.criterio_id}`]=i; });
+  (DADOS.autoavaliacao.criterios_tecnicos||[]).forEach(i=>{ AA[`tec_${i.criterio_id}`]=i; });
+  (DADOS.avaliacao_avaliador.criterios_comportamentais||[]).forEach(i=>{ AV[`comp_${i.criterio_id}`]=i; });
+  (DADOS.avaliacao_avaliador.criterios_tecnicos||[]).forEach(i=>{ AV[`tec_${i.criterio_id}`]=i; });
+
+  const cont=document.getElementById('criterios-container');
+  cont.innerHTML=
+    secao('🤝 Critérios Comportamentais',DADOS.criterios_comportamentais,'comp')+
+    secao('🔧 Critérios Técnicos',DADOS.criterios_tecnicos,'tec');
+
+  document.getElementById('tela-form').style.display='block';
+  atualizarProgresso();
+}
+
+function secao(titulo,criterios,prefixo){
+  if(!criterios.length) return '';
+  const itens=criterios.map((c,i)=>{
+    const aa=AA[`${prefixo}_${c.id}`]||{};
+    const av=AV[`${prefixo}_${c.id}`]||{};
+    const refs=`<div class="notas-ref">
+      <span><span class="legend-dot" style="background:#7AC143;display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:3px;vertical-align:middle"></span>Auto: ${aa.nota||'–'} (${LABELS[aa.nota]||'–'})</span>
+      <span><span class="legend-dot" style="background:#0D2614;display:inline-block;width:14px;height:14px;border-radius:50%;margin-right:3px;vertical-align:middle"></span>Aval: ${av.nota||'–'} (${LABELS[av.nota]||'–'})</span>
+    </div>`;
+    const bts=[1,2,3,4,5].map(n=>
+      `<button class="nota-btn" id="btn-${prefixo}-${c.id}-${n}" onclick="sel('${prefixo}','${c.id}',${n})">${n}</button>`
+    ).join('');
+    return `<div class="criterio">
+      <div class="criterio-desc">${i+1}. ${esc(c.descricao)}</div>
+      ${refs}
+      <div class="escala">${bts}</div>
+    </div>`;
+  }).join('');
+  return `<div class="secao-titulo">${titulo}</div>${itens}`;
+}
+
+function sel(prefixo,cid,nota){
+  notas[`${prefixo}_${cid}`]=nota;
+  [1,2,3,4,5].forEach(n=>{ const b=document.getElementById(`btn-${prefixo}-${cid}-${n}`); if(b) b.classList.toggle('sel',n===nota); });
+  atualizarProgresso();
+}
+
+function atualizarProgresso(){
+  const total=(DADOS.criterios_comportamentais.length+DADOS.criterios_tecnicos.length);
+  document.getElementById('progresso-label').textContent=`${Object.keys(notas).length} de ${total} avaliado(s)`;
+}
+
+async function enviar(){
+  const btn=document.getElementById('btn-enviar');
+  const errEl=document.getElementById('msg-erro-envio');
+  errEl.style.display='none';
+  const faltando=[];
+  DADOS.criterios_comportamentais.forEach(c=>{ if(!notas[`comp_${c.id}`]) faltando.push(c.descricao); });
+  DADOS.criterios_tecnicos.forEach(c=>{ if(!notas[`tec_${c.id}`]) faltando.push(c.descricao); });
+  if(faltando.length){ errEl.textContent=`Avalie todos os critérios. Faltam ${faltando.length}.`; errEl.style.display='block'; return; }
+
+  btn.disabled=true; btn.textContent='Enviando…';
+  const corpo={
+    criterios_comportamentais:DADOS.criterios_comportamentais.map(c=>({criterio_id:String(c.id),nota:notas[`comp_${c.id}`],observacao:''})),
+    criterios_tecnicos:DADOS.criterios_tecnicos.map(c=>({criterio_id:String(c.id),nota:notas[`tec_${c.id}`],observacao:''})),
+    observacao_geral:document.getElementById('obs-geral').value.trim(),
+  };
+  try{
+    const r=await fetch(`/api/rh/desempenho/public/supervisor/${token}`,{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(corpo)});
+    if(r.ok){ mostrarSucesso(); return; }
+    const d=await r.json().catch(()=>({}));
+    errEl.textContent=d.detail||'Erro.'; errEl.style.display='block';
+    btn.disabled=false; btn.textContent='🏆 Enviar co-avaliação';
+  }catch(e){ errEl.textContent='Falha de conexão.'; errEl.style.display='block'; btn.disabled=false; btn.textContent='🏆 Enviar co-avaliação'; }
+}
+
+function esc(s){ const d=document.createElement('div');d.textContent=s;return d.innerHTML; }
+function fmt(iso){ if(!iso) return ''; const [a,m,d]=iso.split('-'); return `${d}/${m}/${a}`; }
+
+carregar();
+</script>
+</body>
+</html>

@@ -1,0 +1,52 @@
+# ==== Segredos e credenciais ====
+.env
+.env.*
+!.env.example
+.cloudflared/
+cloudflared
+cloudflared.exe
+*.pem
+*.key
+*.crt
+
+# ==== Dados da aplicação (RH, usuários, licitações, frota, monitoramento) ====
+# Contêm dados pessoais e de negócio; nunca versionar.
+data/
+
+# ==== Backups e versões antigas ====
+*.bak
+*.bak[0-9]*
+*.bak-*
+*.bak_*
+*.old
+*.old[0-9]*
+*.old.*
+*.old[0-9]*.*
+*.rar
+*.zip
+*.7z
+*.txt.bak
+*.py.txt
+index.old*.html
+index-old.html
+index.pre-*.html
+*.quebrado
+*.quebrado.*
+*_v1.*
+
+# ==== Builds compilados dos apps (o código-fonte fica nos repositórios dos apps) ====
+static/frota/assets/
+static/monitoramento/assets/
+static/*/assets.*/
+
+# ==== Python ====
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+
+# ==== Sistema / editor ====
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
