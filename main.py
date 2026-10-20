@@ -22,6 +22,11 @@ DATA.mkdir(exist_ok=True)
 
 app = FastAPI(title="Intranet Safenet", docs_url="/api/docs")
 
+# Login único Keycloak (desligado a menos que KEYCLOAK_ISSUER esteja definido).
+import gateway_auth
+if gateway_auth.ATIVO:
+    app.middleware("http")(gateway_auth.middleware)
+
 # Rotas dos apps. TÊM que vir aqui, ANTES do mount("/") lá embaixo —
 # senão o StaticFiles captura /api/... antes de chegar aqui.
 app.include_router(frota_router)

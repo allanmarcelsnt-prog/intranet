@@ -1,0 +1,13 @@
+# SÓ PARA TESTE: sobe uma cópia do backend da intranet (dados vazios) atrás do portal.
+# Uso: docker compose -f docker-compose.yml -f docker-compose.teste.yml up -d --build
+services:
+  backend:
+    build: ./backend
+    image: safenet-intranet-backend-teste:latest
+    restart: unless-stopped
+    environment:
+      KEYCLOAK_ISSUER: ${KEYCLOAK_URL}/realms/safenet
+      KEYCLOAK_CLIENT: intranet
+      TZ: America/Sao_Paulo
+  proxy:
+    depends_on: [backend]

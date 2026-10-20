@@ -887,9 +887,9 @@ const CATALOGO = [
     setor:"Operacional",
     icon:"monitor",
     apps:[
-      { nome:"Relatório de Frota", desc:"Preenchimento e geração de relatórios de frota.", status:"on", url:"/frota/", icon:"truck" },
-      { nome:"Relatório Semanal - Monitoramento", desc:"Preenchimento e geração de relatórios do Monitoramento.", status:"on", url:"/monitoramento/", icon:"truck" },
-        { nome:"Monitoramento (novo)", desc:"Plantão e relatório semanal — nova versão em teste.", status:"on", url:"https://monitoramento.safenet.lan:8543/", icon:"monitor", externo:true },
+      { nome:"Relatório de Frota", desc:"Preenchimento e geração de relatórios de frota.", grupo:"GS_App_Frota", status:"on", url:"/frota/", icon:"truck" },
+      { nome:"Relatório Semanal - Monitoramento", desc:"Preenchimento e geração de relatórios do Monitoramento.", grupo:"GS_App_Monitoramento", status:"on", url:"/monitoramento/", icon:"truck" },
+        { nome:"Monitoramento (novo)", desc:"Plantão e relatório semanal — nova versão em teste.", grupo:"GS_App_Monitoramento", status:"on", url:"https://monitoramento.safenet.lan:8543/", icon:"monitor", externo:true },
       { nome:"Segware Cloud", desc:"Software de monitoramento.", status:"on", url:"https://cloud.segware.com.br/", icon:"monitor", externo:true },
       { nome:"Auvo — Ordens de Serviço", desc:"App de ordens de serviço do operacional.", status:"on", url:"https://app.auvo.com.br/", icon:"clipboard", externo:true },
       { nome:"Auvo Desk — Chamados", desc:"Abertura de tickets e chamados.", status:"on", url:"https://desk.auvo.com.br/Login", icon:"ticket", externo:true },
@@ -981,6 +981,7 @@ CATALOGO.forEach(sec=>{
       a.href=app.url||'#';
       if(app.externo){ a.target='_blank'; a.rel='noopener noreferrer'; }
       a.dataset.name=(app.nome+' '+app.desc+' '+sec.setor).toLowerCase();
+      if(app.grupo) a.dataset.grupo=app.grupo;
       const acao = app.externo ? `Acessar ${extArrow}` : `Abrir ${arrow}`;
       a.innerHTML=`
         <div class="card-top">
@@ -1007,6 +1008,33 @@ CATALOGO.forEach(sec=>{
   });
   content.appendChild(sect);
 });
+
+/* ---- login único: mostra só os apps que a pessoa pode usar ----
+   Atrás do portal de login (oauth2-proxy), /oauth2/userinfo devolve os grupos do
+   Keycloak. Sem o portal (acesso direto) a chamada falha e tudo continua visível. */
+fetch('/oauth2/userinfo',{cache:'no-store'})
+  .then(r=>r.ok?r.json():null).catch(()=>null)
+  .then(info=>{
+    if(!info) return;
+    const grupos=info.groups||[];
+    document.querySelectorAll('.card[data-grupo]').forEach(c=>{
+      if(!grupos.includes(c.dataset.grupo)) c.remove();
+    });
+    document.querySelectorAll('.sector').forEach(sec=>{
+      const n=sec.querySelectorAll('.card.live').length;
+      const cnt=sec.querySelector('.count');
+      if(cnt) cnt.textContent=`${n} ${n===1?'app ativo':'apps ativos'}`;
+      if(!sec.querySelector('.card')) sec.remove();
+    });
+    const alvo=document.querySelector('.foot-right');
+    if(alvo){
+      const sep=document.createElement('span'); sep.className='foot-sep';
+      const sair=document.createElement('a'); sair.href='/oauth2/sign_out';
+      sair.textContent='Sair'+(info.preferredUsername?' ('+info.preferredUsername+')':'');
+      sair.style.color='inherit';
+      alvo.append(sep,sair);
+    }
+  });
 
 /* ---- busca ---- */
 const search=document.getElementById('search');

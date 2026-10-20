@@ -76,6 +76,17 @@ def achar_por_login(usuario: str):
     return None
 
 
+def achar_por_email(email: str):
+    """Usuário ativo pelo e-mail (login único Keycloak). None se não houver."""
+    email = (email or "").strip().lower()
+    if not email:
+        return None
+    for u in _ler():
+        if (u.get("email") or "").strip().lower() == email and u.get("ativo", True):
+            return u
+    return None
+
+
 def definir_senha_primeiro_acesso(usuario: str, senha: str):
     with _lock:
         usuarios = _ler()

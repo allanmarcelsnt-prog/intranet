@@ -20,6 +20,7 @@ from fastapi import APIRouter, HTTPException, Request, Response, Depends
 from pydantic import BaseModel
 
 import auth_store
+import gateway_auth
 
 router = APIRouter(prefix="/api/auth", tags=["auth"])
 
@@ -42,6 +43,17 @@ def usuario_logado(request: Request) -> dict:
     """Dependência: exige sessão válida. Devolve o usuário autenticado.
     Inclui 'papeis_extras' (lista de papéis RH) — retrocompatível com tokens
     antigos que não trazem esse campo (fica lista vazia)."""
+    # Login único (Keycloak): só vale com KEYCLOAK_ISSUER definido (gateway_auth.ATIVO).
+    if gateway_auth.ATIVO:
+        kc = gateway_auth.identidade(request)
+        if kc:
+            u = auth_store.achar_por_email(kc["email"])
+            if not u:
+                raise HTTPException(status_code=403, detail=(
+                    "Sua conta Safenet não está ligada a um usuário da intranet "
+                    "(o e-mail precisa estar cadastrado)."))
+            return {"id": u["id"], "nome": u["nome"], "usuario": u["usuario"],
+                    "papel": u["papel"], "papeis_extras": u.get("papeis_extras", [])}
     token = request.cookies.get(COOKIE)
     if not token:
         raise HTTPException(status_code=401, detail="Não autenticado")

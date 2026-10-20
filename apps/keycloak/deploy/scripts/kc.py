@@ -230,6 +230,20 @@ def criar_fluxo(kc: KC, slug: str) -> str:
 
 
 # ---------------------------------------------------------------- comandos
+def garantir_mapper_grupos(kc: KC, cid: str) -> None:
+    """Põe os grupos do usuário (ex.: GS_App_Frota) na claim 'groups' do token.
+    O portal (oauth2-proxy) e o backend da intranet usam essa claim."""
+    for m in kc.get(f"/clients/{cid}/protocol-mappers/models"):
+        if m.get("name") == "groups":
+            return
+    kc.post(f"/clients/{cid}/protocol-mappers/models", {
+        "name": "groups", "protocol": "openid-connect",
+        "protocolMapper": "oidc-group-membership-mapper",
+        "config": {"claim.name": "groups", "full.path": "false",
+                   "id.token.claim": "true", "access.token.claim": "true",
+                   "userinfo.token.claim": "true"}})
+
+
 def cmd_app(kc: KC, a):
     validar_slug(a.slug)
     origens = sorted({"{0.scheme}://{0.netloc}".format(urllib.parse.urlparse(u)) for u in a.redirect})
@@ -249,6 +263,8 @@ def cmd_app(kc: KC, a):
         cid = cli["id"]
         cli.update({k: rep[k] for k in ("name", "redirectUris", "webOrigins")})
         kc.put(f"/clients/{cid}", cli)
+
+    garantir_mapper_grupos(kc, cid)
 
     # papel "acesso" do app + grupo GS_App_<Slug> que concede esse papel
     st, _, _ = kc._admin("POST", f"/clients/{cid}/roles",
