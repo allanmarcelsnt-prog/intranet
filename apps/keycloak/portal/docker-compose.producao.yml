@@ -1,0 +1,11 @@
+# PRODUÇÃO: junta o portal (oauth2-proxy) à rede do app "intranet-safenet" da TrueNAS,
+# para falar com o backend pelo nome (http://intranet:80), sem porta publicada do backend.
+# Uso: docker compose -f docker-compose.yml -f docker-compose.producao.yml up -d
+# O app intranet-safenet precisa estar rodando (é ele que cria a rede).
+services:
+  proxy:
+    networks: [default, intranet]
+networks:
+  intranet:
+    external: true
+    name: ix-intranet-safenet_default
