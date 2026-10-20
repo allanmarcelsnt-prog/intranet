@@ -1,0 +1,114 @@
+/* Safenet / REGGRA — paleta da logo e do portal */
+:root {
+  --sn-verde: #7AC143;
+  --sn-verde-d: #5b9f2c;
+  --sn-escuro: #0d2614;
+  --sn-navy: #164023;
+  --sn-laranja: #E8401C;
+  --sn-magenta: #D41B6C;
+  --sn-ciano: #00B5E2;
+  --sn-ink: #172019;
+  --sn-muted: #667268;
+  --sn-line: #dfe8df;
+  --pf-v5-global--primary-color--100: var(--sn-verde-d);
+  --pf-v5-global--primary-color--200: var(--sn-navy);
+  --pf-v5-global--link--Color: var(--sn-verde-d);
+  --pf-v5-global--link--Color--hover: var(--sn-navy);
+  --keycloak-card-top-color: var(--sn-verde);
+}
+
+html, body, .login-pf body {
+  background:
+    radial-gradient(900px 600px at 85% 10%, rgba(122,193,67,.28), transparent 60%),
+    radial-gradient(700px 500px at 5% 95%, rgba(0,181,226,.16), transparent 60%),
+    linear-gradient(160deg, var(--sn-navy) 0%, var(--sn-escuro) 100%) fixed !important;
+  font-family: "Segoe UI", system-ui, -apple-system, Roboto, "Helvetica Neue", Arial, sans-serif;
+}
+
+/* marca d'água da logo no canto */
+body::before {
+  content: "";
+  position: fixed; right: -80px; bottom: -80px;
+  width: 520px; height: 520px;
+  background: url("../img/logo.png") no-repeat center / contain;
+  opacity: .07; pointer-events: none;
+}
+
+.pf-v5-c-login__container { grid-template-columns: minmax(0, 27rem); }
+
+/* título acima do cartão */
+.pf-v5-c-login__header { padding-bottom: 1.25rem; }
+#kc-header-wrapper {
+  color: #fff; text-align: center; font-size: 1.05rem; letter-spacing: .04em;
+  background: none !important; height: auto !important; width: auto !important;
+  line-height: 1.4;
+}
+#kc-header-wrapper b { color: var(--sn-verde); font-weight: 700; }
+
+/* cartão */
+.pf-v5-c-login__main {
+  border-radius: 18px; overflow: hidden;
+  background: #fff;
+  box-shadow: 0 24px 60px rgba(0,0,0,.45);
+  position: relative;
+}
+.pf-v5-c-login__main::before {          /* faixa tricolor da marca */
+  content: ""; display: block; height: 6px;
+  background: linear-gradient(90deg, var(--sn-verde) 0 40%, var(--sn-ciano) 40% 62%, var(--sn-magenta) 62% 82%, var(--sn-laranja) 82% 100%);
+}
+.pf-v5-c-login__main-header {
+  border-top: 0 !important; text-align: center;
+  padding-top: 1.75rem; display: block;
+}
+.pf-v5-c-login__main-header::before {
+  content: ""; display: block; margin: 0 auto .9rem;
+  width: 84px; height: 84px;
+  background: url("../img/logo.png") no-repeat center / contain;
+}
+.pf-v5-c-login__main-header-desc { display: none; }
+.pf-v5-c-login__main-header .pf-v5-c-title,
+#kc-page-title {
+  color: var(--sn-navy); font-weight: 700; font-size: 1.45rem;
+}
+.pf-v5-c-login__main-body { padding-bottom: 1.75rem; }
+
+/* campos */
+.pf-v5-c-form__label-text { color: var(--sn-ink); font-weight: 600; }
+.pf-v5-c-form-control { border-radius: 10px; }
+.pf-v5-c-form-control::after { border-radius: 10px; }
+.pf-v5-c-form-control:focus-within::after { border-color: var(--sn-verde) !important; }
+.pf-v5-c-form-control input { color: var(--sn-ink); }
+
+/* botão principal */
+.pf-v5-c-button.pf-m-primary {
+  background: linear-gradient(180deg, var(--sn-verde), var(--sn-verde-d));
+  color: #fff; font-weight: 700; border-radius: 10px;
+  padding-block: .8rem; letter-spacing: .02em;
+  box-shadow: 0 6px 16px rgba(91,159,44,.35);
+  border: 0;
+}
+.pf-v5-c-button.pf-m-primary:hover,
+.pf-v5-c-button.pf-m-primary:focus {
+  background: linear-gradient(180deg, #86cf4c, var(--sn-navy));
+}
+.pf-v5-c-button.pf-m-control { border-radius: 0 10px 10px 0; }
+
+/* mensagens de erro/aviso */
+.pf-v5-c-alert { border-radius: 10px; }
+.pf-v5-c-alert.pf-m-danger { border-color: var(--sn-magenta); }
+.pf-v5-c-alert.pf-m-danger .pf-v5-c-alert__icon { color: var(--sn-magenta); }
+.pf-v5-c-login__main-footer-band { background: #f6f8f5; }
+.pf-v5-c-login__main-footer-band a, #kc-info a { color: var(--sn-verde-d); }
+
+/* rodapé do idioma */
+.pf-v5-c-login__footer { color: #cfe3c6; }
+
+@media (max-width: 520px) {
+  .pf-v5-c-login__container { padding-inline: 12px; }
+  body::before { width: 320px; height: 320px; }
+}
+
+/* espaçamentos finos */
+#kc-page-title { margin-bottom: .6rem; }
+.pf-v5-c-login__main-header-utilities { margin-top: .25rem; }
+.pf-v5-c-login__header { padding-top: 0; }

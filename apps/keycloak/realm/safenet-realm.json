@@ -25,5 +25,6 @@
   "ssoSessionMaxLifespan": 36000,
   "internationalizationEnabled": true,
   "supportedLocales": ["pt-BR", "en"],
-  "defaultLocale": "pt-BR"
+  "defaultLocale": "pt-BR",
+  "loginTheme": "safenet"
 }

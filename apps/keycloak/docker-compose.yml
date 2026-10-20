@@ -48,6 +48,7 @@ services:
       TZ: America/Sao_Paulo
     volumes:
       - ./realm/safenet-realm.json:/opt/keycloak/data/import/safenet-realm.json:ro
+      - ./themes/safenet:/opt/keycloak/themes/safenet:ro
     ports:
       - "${HTTP_PORT:-8180}:8080"
       - "${HTTPS_PORT:-8543}:8443"

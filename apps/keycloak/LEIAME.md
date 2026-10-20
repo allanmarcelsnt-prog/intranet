@@ -72,3 +72,7 @@ Faça uma cópia do `.env` junto. Restaure sempre na mesma versão do Keycloak.
 - Atualização de versão: trocar a tag em `docker-compose.yml` após backup.
 - Se o Keycloak cair, quem tem sessão aberta nos apps continua; novos logins pelo botão SSO falham (por isso o login antigo fica até o fim).
 - Política de senha: 10+ caracteres, diferente do usuário; bloqueio após 5 falhas.
+
+## Tema da tela de login (Safenet / REGGRA)
+
+Pasta `themes/safenet` (montada em `/opt/keycloak/themes/safenet` pelo `docker-compose.yml`). Herda o tema padrão e troca cores, logo e textos (`messages/`). Em instalação nova o realm já vem com `loginTheme: safenet`; em instalação existente: painel → Realm settings → Themes → Login theme = `safenet` → Save. Em modo produção o Keycloak guarda o tema em cache: após alterar arquivos, `docker compose up -d --force-recreate keycloak`.
