@@ -36,6 +36,15 @@ function AuthPage() {
   const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
 
+  const entrarComContaSafenet = async () => {
+    setBusy(true);
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "keycloak",
+      options: { scopes: "openid", redirectTo: window.location.origin },
+    });
+    if (error) { setBusy(false); toast.error("Não foi possível abrir o login da Safenet"); }
+  };
+
   const submit = async (e: React.FormEvent) => {
     e.preventDefault();
     const parsed = schema.safeParse({ email, password, name });
@@ -77,6 +86,8 @@ function AuthPage() {
           <div className="space-y-1.5"><Label htmlFor="auth-password">Senha</Label><Input id="auth-password" type="password" autoComplete={mode === "in" ? "current-password" : "new-password"} value={password} onChange={(e) => setPassword(e.target.value)} /></div>
           <Button className="w-full" disabled={busy}>{mode === "in" ? "Entrar" : "Cadastrar"}</Button>
         </form>
+        <div className="my-4 flex items-center gap-3 text-xs text-muted-foreground"><span className="h-px flex-1 bg-border" />ou<span className="h-px flex-1 bg-border" /></div>
+        <Button type="button" variant="outline" className="w-full" disabled={busy} onClick={entrarComContaSafenet}>Entrar com a conta Safenet</Button>
         <button className="mt-4 w-full text-center text-sm text-muted-foreground hover:text-foreground" onClick={() => setMode(mode === "in" ? "up" : "in")}>
           {mode === "in" ? "Novo operador? Cadastre-se" : "Já tem conta? Entrar"}
         </button>

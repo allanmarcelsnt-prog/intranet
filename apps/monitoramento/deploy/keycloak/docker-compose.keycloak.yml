@@ -1,0 +1,11 @@
+# Acrescenta o login único (Keycloak) ao GoTrue. Use junto do compose principal:
+#   docker compose -f docker-compose.yml -f deploy/keycloak/docker-compose.keycloak.yml up -d
+# Variáveis no .env: KEYCLOAK_URL (ex.: http://192.168.0.171:8190) e KEYCLOAK_CLIENT_SECRET.
+services:
+  auth:
+    environment:
+      GOTRUE_EXTERNAL_KEYCLOAK_ENABLED: "true"
+      GOTRUE_EXTERNAL_KEYCLOAK_CLIENT_ID: monitoramento
+      GOTRUE_EXTERNAL_KEYCLOAK_SECRET: ${KEYCLOAK_CLIENT_SECRET:?defina KEYCLOAK_CLIENT_SECRET no .env}
+      GOTRUE_EXTERNAL_KEYCLOAK_REDIRECT_URI: ${SITE_URL}/auth/v1/callback
+      GOTRUE_EXTERNAL_KEYCLOAK_URL: ${KEYCLOAK_URL:?defina KEYCLOAK_URL no .env}/realms/safenet
