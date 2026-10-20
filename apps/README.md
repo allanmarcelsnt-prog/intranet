@@ -5,6 +5,7 @@ Aplicações independentes da intranet Safenet que têm código-fonte e implanta
 | App | Pasta | O que é | Documentação |
 |---|---|---|---|
 | Monitoramento (shift-guardian) | `monitoramento/` | Plantão e relatório semanal do monitoramento 24/7 (TanStack Start + Postgres/GoTrue/PostgREST em Docker) | [`monitoramento/LEIAME.md`](monitoramento/LEIAME.md) |
+| Keycloak (login único) | `keycloak/` | IdP central OIDC: um login, acesso por app; AD depois | [`keycloak/LEIAME.md`](keycloak/LEIAME.md) |
 
 ## Regras para novos apps
 

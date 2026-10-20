@@ -1,0 +1,13 @@
+# Acrescenta HTTPS ao Keycloak. Use junto com o arquivo principal:
+#   docker compose -f docker-compose.yml -f docker-compose.https.yml up -d
+#
+# Antes: copie fullchain.pem e privkey.pem para deploy/certs/ e, no .env, troque
+# KEYCLOAK_URL para https://<nome-ou-ip>:8543. Sem certificado confiável pela CA da
+# empresa, os navegadores avisam e o login único dos apps com HTTPS pode falhar.
+services:
+  keycloak:
+    environment:
+      KC_HTTPS_CERTIFICATE_FILE: /opt/keycloak/certs/fullchain.pem
+      KC_HTTPS_CERTIFICATE_KEY_FILE: /opt/keycloak/certs/privkey.pem
+    volumes:
+      - ./deploy/certs:/opt/keycloak/certs:ro

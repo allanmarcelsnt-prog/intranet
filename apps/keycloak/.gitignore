@@ -1,0 +1,15 @@
+# Segredos
+.env
+.env.*
+!.env.example
+deploy/certs/*
+!deploy/certs/.gitkeep
+*.pem
+*.key
+
+# Backups
+backups/
+*.dump
+
+# Python
+__pycache__/

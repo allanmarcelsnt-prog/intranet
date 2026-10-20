@@ -1,0 +1,68 @@
+# Keycloak Safenet — login único da intranet (TrueNAS / Docker).
+# Serviços: db (Postgres) → keycloak (importa o realm "safenet" na primeira subida).
+# Uso: ./deploy/setup.sh http://<ip-da-truenas>:8180 && docker compose up -d
+#
+# Portas: 8180 (HTTP) e 8543 (HTTPS). Escolhidas para não colidir com a interface da
+# TrueNAS (80/443), o app de monitoramento (8080/8443) e o backend da intranet (8081).
+
+name: safenet-keycloak
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_DB: keycloak
+      POSTGRES_USER: keycloak
+      POSTGRES_PASSWORD: ${KC_DB_PASSWORD:?rode deploy/setup.sh para gerar o .env}
+    volumes:
+      - db-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U keycloak -d keycloak"]
+      interval: 5s
+      timeout: 5s
+      retries: 20
+      start_period: 10s
+
+  keycloak:
+    image: quay.io/keycloak/keycloak:26.8.1
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    # "start" = modo produção. --import-realm só importa se o realm ainda não existir.
+    command: ["start", "--import-realm"]
+    environment:
+      KC_DB: postgres
+      KC_DB_URL: jdbc:postgresql://db:5432/keycloak
+      KC_DB_USERNAME: keycloak
+      KC_DB_PASSWORD: ${KC_DB_PASSWORD}
+      # Endereço pelo qual navegadores E os apps (GoTrue etc.) acessam o Keycloak.
+      KC_HOSTNAME: ${KEYCLOAK_URL:?rode deploy/setup.sh para gerar o .env}
+      # HTTP liberado enquanto não há certificado confiável (ver docker-compose.https.yml).
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      # Conta de administrador inicial (só usada na primeira subida).
+      KC_BOOTSTRAP_ADMIN_USERNAME: ${KC_BOOTSTRAP_ADMIN_USERNAME:-admin}
+      KC_BOOTSTRAP_ADMIN_PASSWORD: ${KC_BOOTSTRAP_ADMIN_PASSWORD:?rode deploy/setup.sh para gerar o .env}
+      TZ: America/Sao_Paulo
+    volumes:
+      - ./realm/safenet-realm.json:/opt/keycloak/data/import/safenet-realm.json:ro
+    ports:
+      - "${HTTP_PORT:-8180}:8080"
+      - "${HTTPS_PORT:-8543}:8443"
+    healthcheck:
+      # A imagem não tem curl; testa a porta de gerenciamento (9000, não publicada) com bash.
+      test:
+        - CMD-SHELL
+        - >-
+          exec 3<>/dev/tcp/127.0.0.1/9000 &&
+          echo -e 'GET /health/ready HTTP/1.1\r\nHost: localhost\r\nConnection: close\r\n\r\n' >&3 &&
+          grep -q '"status": "UP"' <&3
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 60s
+
+volumes:
+  db-data:

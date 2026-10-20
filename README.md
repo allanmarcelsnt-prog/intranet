@@ -115,6 +115,7 @@ Fluxo do pregão: `triagem` → `aguardando_adriano` (validação) → `aguardan
 - Monitoramento: três eixos (`semanas`, `acervo`, cadastros), porque pontos de atenção atravessam semanas. Relatório semanal consulta o acervo por sobreposição de período.
 - As telas em `static/frota` e `static/monitoramento` são builds compilados (Vite/React). **O código-fonte dessas telas antigas não está neste repositório**; só o `index.html` de cada uma.
 - O **novo app de monitoramento** (shift-guardian), que roda em Docker com banco próprio e foi desenhado para substituir o relatório semanal acima, tem o código-fonte em [`apps/monitoramento`](apps/monitoramento/LEIAME.md). A migração dos dados do app antigo usa `apps/monitoramento/deploy/legacy/import_monitoramento.py`.
+- O **login único** (Keycloak, OIDC, acesso por app, AD numa fase seguinte) tem o pacote de implantação em [`apps/keycloak`](apps/keycloak/LEIAME.md).
 
 ## 7. Dados
 
