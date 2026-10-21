@@ -343,7 +343,11 @@
     });
 
     let html = '';
-    Object.keys(grupos).sort().forEach(k => {
+    // ordena numericamente (ano, mês): como texto, "2026-9" ficava depois de "2026-10"
+    Object.keys(grupos).sort((a,b) => {
+      const [aa,am] = a.split('-').map(Number), [ba,bm] = b.split('-').map(Number);
+      return (aa - ba) || (am - bm);
+    }).forEach(k => {
       const [ano, mes] = k.split('-').map(Number);
       html += `<div class="mes"><div class="mes-titulo">${MESES[mes]} ${ano}</div>`;
 
@@ -365,8 +369,11 @@
         let acoes = '';
         if(c.link_inscricao)
           acoes += `<a class="btn btn-inscrever" href="${esc(c.link_inscricao)}" target="_blank" rel="noopener">Inscreva-se →</a>`;
-        if(c.link_zoom)
-          acoes += `<a class="btn btn-zoom" href="${esc(c.link_zoom)}" target="_blank" rel="noopener">Registrar no Zoom</a>`;
+        if(c.link_zoom){
+          // DHSA/DHSP/DHSE: o link é a trilha do curso (o Zoom fica dentro dela)
+          const trilha = /dahuaacademy\.com\.br\/course\//.test(c.link_zoom);
+          acoes += `<a class="btn btn-zoom" href="${esc(c.link_zoom)}" target="_blank" rel="noopener">${trilha ? 'Acessar a trilha do curso' : 'Registrar no Zoom'}</a>`;
+        }
 
         const classe = rolando ? ' rolando' : (proximo ? ' destaque' : '');
 
