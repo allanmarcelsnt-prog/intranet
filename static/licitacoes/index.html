@@ -26,6 +26,7 @@
   .id-card p{color:var(--ink-2);font-size:12.5px;margin:0 0 20px}
   .id-card label{display:block;font-size:11px;font-weight:700;color:var(--ink-2);text-transform:uppercase;letter-spacing:.4px;margin-bottom:6px}
   .id-card select,.id-card input{width:100%;border:1px solid var(--line);border-radius:8px;padding:11px 12px;font-family:inherit;font-size:14px;margin-bottom:14px;background:#fff}
+  .id-portal{display:block;text-align:center;text-decoration:none;background:var(--brand);color:#fff;border-radius:8px;padding:12px;font-weight:700;font-size:14px}
   .id-card button{width:100%;border:0;background:var(--brand);color:#fff;border-radius:8px;padding:12px;font-weight:700;font-size:14px;cursor:pointer;font-family:inherit}
   .id-card button:hover{background:var(--brand-2)}
   .id-err{background:var(--bad-bg);color:var(--bad);font-size:12.5px;border-radius:8px;padding:8px 11px;margin-bottom:12px;display:none}
@@ -113,6 +114,22 @@
   .arq-motivo{margin-top:6px;font-size:12px;background:#f6f7f5;border-radius:7px;padding:6px 9px}
   .arq-acoes{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
   .arq-vazio{text-align:center;color:var(--ink-2);padding:24px 0;font-size:13px}
+  .hi-filtros{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:8px}
+  .modal-b .hi-filtros input{flex:1 1 280px;width:auto;min-width:200px;margin:0;border:1px solid var(--line);border-radius:8px;padding:9px 11px;font-family:inherit;font-size:13px}
+  .modal-b .hi-filtros select{flex:0 1 auto;width:auto;margin:0;border:1px solid var(--line);border-radius:8px;padding:9px 10px;font-family:inherit;font-size:13px;background:#fff}
+  .modal-b .hi-filtros button{margin:0}
+  .hi-total{font-size:12px;color:var(--ink-2);margin:0 0 8px}
+  .hi-pag{display:flex;gap:8px;justify-content:center;align-items:center;margin:10px 0;font-size:12.5px}
+  .hi-tag{display:inline-block;font-size:11px;font-weight:700;border-radius:999px;padding:2px 8px;background:#eef3f0;color:#164023;margin-right:6px}
+  .hi-obj{font-size:12px;color:var(--ink);margin-top:4px}
+  .hi-mod{font-size:12px;margin-top:4px}
+  .hi-admin{border:1px dashed #c9a0a0;background:#fff7f7;border-radius:10px;padding:12px 14px;margin-top:14px}
+  .hi-admin small{display:block;color:var(--ink-2);margin:2px 0 8px;font-size:12px}
+  .cad-parecidos{border:1px solid #cfe3d6;background:#f4faf6;border-radius:10px;padding:10px 12px;margin:8px 0 12px;font-size:12.5px}
+  .cad-parecidos b{font-size:12.5px}
+  .cad-parecidos .cp-item{border-top:1px solid #dcebe2;padding:6px 0}
+  .cad-parecidos .cp-item:first-of-type{border-top:0}
+  .cad-parecidos small{display:block;color:var(--ink-2);font-size:11.5px}
   /* anotações no card + modal */
   .pc-notas{display:inline-flex;align-items:center;gap:5px;margin-top:8px;font-size:11px;color:var(--ink-2);cursor:pointer;background:var(--paper);border:1px solid var(--line);border-radius:6px;padding:3px 8px;font-weight:600}
   .pc-notas:hover{background:#eef1f3;color:var(--ink)}
@@ -792,19 +809,18 @@ header.app{position:sticky;top:0;z-index:40;padding:13px 28px;background:rgba(25
     <div class="mark">S</div>
     <div class="eyebrow">SAFENET · INTRANET</div>
     <h1>Gestor de Pregões</h1>
-    <p id="idSub">Entre com seu usuário e senha.</p>
-    <div class="id-err" id="idErr"></div>
-    <label>Usuário</label>
-    <select id="selUsuario"></select>
-    <div id="campoSenha">
-      <label id="lblSenha">Senha</label>
-      <input id="inSenha" type="password" placeholder="••••••••">
+    <p id="idMsgAcesso">O acesso ao Gestor de Pregões é feito pelo portal da Safenet, com o seu login único.</p>
+    <a class="id-portal" href="/">Ir para o portal</a>
+    <!-- Login antigo (usuário/senha do Gestor) desativado na interface em 28/10/2026.
+         Os campos ficam ocultos só para o script não quebrar; nada aqui é exibido nem consultado. -->
+    <div id="loginLegado" style="display:none">
+      <p id="idSub"></p>
+      <div class="id-err" id="idErr"></div>
+      <select id="selUsuario"></select>
+      <div id="campoSenha"><label id="lblSenha">Senha</label><input id="inSenha" type="password"></div>
+      <div id="campoSenha2" style="display:none"><input id="inSenha2" type="password"></div>
+      <button id="btnEntrar">Entrar</button>
     </div>
-    <div id="campoSenha2" style="display:none">
-      <label>Repita a senha</label>
-      <input id="inSenha2" type="password" placeholder="••••••••">
-    </div>
-    <button id="btnEntrar">Entrar</button>
   </div>
 </div>
 
@@ -816,12 +832,11 @@ header.app{position:sticky;top:0;z-index:40;padding:13px 28px;background:rgba(25
     <div class="top-actions">
       <span class="whoami" id="whoami"></span>
       <a class="back-intranet" href="/" title="Voltar para a Intranet">← Intranet</a>
-      <button class="trocar" id="btnTrocar">trocar</button>
       <button class="trocar" id="btnLicoes" title="Lições aprendidas">📘 Lições</button>
       <button class="trocar" id="btnTempo" title="Auditoria de tempo">⏱ Tempo</button>
       <button class="trocar" id="btnUsuarios" title="Gerenciar usuários" style="display:none">👤 Usuários</button>
       <button class="trocar" id="btnEmail" title="Configuração de e-mail" style="display:none">✉️ E-mail</button>
-      <button class="trocar" id="btnArquivados" title="Cards arquivados" style="display:none">📦 Arquivados</button>
+      <button class="trocar" id="btnArquivados" title="Histórico de pregões">📚 Histórico</button>
       <button class="btn-new" id="btnNovo">+ Novo pregão</button>
     </div>
   </header>
@@ -865,6 +880,7 @@ header.app{position:sticky;top:0;z-index:40;padding:13px 28px;background:rgba(25
         <div></div>
       </div>
       <label>Objeto</label><textarea id="f_objeto" rows="2" placeholder="Objeto do edital"></textarea>
+      <div class="cad-parecidos" id="cadParecidos" style="display:none"></div>
 
       <div class="upload-edital">
         <div class="ue-top">
@@ -907,10 +923,23 @@ header.app{position:sticky;top:0;z-index:40;padding:13px 28px;background:rgba(25
 <!-- MODAL CARDS ARQUIVADOS (coordenador) -->
 <div class="modal-bg" id="arqBg">
   <div class="modal wide">
-    <div class="modal-h">Cards arquivados</div>
+    <div class="modal-h">Histórico de pregões</div>
     <div class="modal-b">
-      <p style="font-size:12.5px;color:var(--ink-2);margin:0 0 14px">Cards arquivados saem do quadro, mas ficam guardados e podem ser restaurados. "Excluir de vez" apaga tudo e não tem volta.</p>
+      <p style="font-size:12.5px;color:var(--ink-2);margin:0 0 12px">Pregões que saíram do quadro ficam aqui para consulta nas próximas licitações: busque por órgão, número, UASG, objeto, item ou modelo.</p>
+      <div class="hi-filtros">
+        <input id="hiQ" type="search" placeholder="Buscar: órgão, número, UASG, objeto, item, modelo…">
+        <select id="hiStatus"><option value="">Todas as etapas finais</option></select>
+        <select id="hiAno"><option value="">Todos os anos</option></select>
+        <button class="btn-ghost" id="hiExportar" title="Baixa em Excel o resultado da busca atual">⬇ Exportar planilha</button>
+      </div>
+      <div class="hi-total" id="hiTotal"></div>
       <div id="arqLista"></div>
+      <div class="hi-pag" id="hiPag"></div>
+      <div class="hi-admin" id="hiAdmin" style="display:none">
+        <b>Virada do fluxo (administrador)</b>
+        <small>Move TODOS os cards que estão hoje no quadro para este histórico, sem apagar nada. Antes disso o sistema guarda uma cópia dos dados.</small>
+        <button class="btn-danger" id="hiArquivarTudo">Arquivar todos os cards do quadro…</button>
+      </div>
     </div>
     <div class="modal-f"><button class="btn-ghost" id="arqFechar">Fechar</button></div>
   </div>
@@ -940,7 +969,7 @@ header.app{position:sticky;top:0;z-index:40;padding:13px 28px;background:rgba(25
 <!-- MODAL VALIDAÇÃO DO ADRIANO -->
 <div class="modal-bg" id="vdBg">
   <div class="modal wide2">
-    <div class="modal-h">Validação do Adriano</div>
+    <div class="modal-h">Validação do Bruno</div>
     <div class="modal-b">
       <div class="tg-resumo" id="vdResumo"></div>
       <div style="font-size:12px;color:var(--ink-2);margin-bottom:4px">Nada avança para cotação sem sua validação. Confira os itens que o Thiago marcou <b>e</b> os que ele deixou de fora.</div>
@@ -1362,7 +1391,7 @@ const API = '/api/licitacoes';
 const AUTH = '/api/auth';
 const COLS = [
   ['triagem','Triagem','#8a9aab'],
-  ['aguardando_adriano','Aguardando Adriano','#9a6b00'],
+  ['aguardando_adriano','Aguardando Bruno','#9a6b00'],
   ['aguardando_rodrigo','Triado · aguardando Rodrigo','#c2410c'],
   ['definir_sugestoes','Definir sugestões','#0b5d4e'],
   ['em_cotacao','Em cotação','#1d4e89'],
@@ -1374,7 +1403,8 @@ const COLS = [
   ['nao_realizado','Não realizado / não participado','#8a5a00'],
 ];
 let USUARIO = null;         // {id,nome,usuario,papel} após login
-let USUARIOS_LISTA = [];    // lista pública (para saber tem_senha)
+let USUARIOS_LISTA = [];    // (legado) lista pública do login antigo — não é mais consultada
+let MSG_ACESSO = '';        // motivo devolvido pelo servidor quando a conta não tem acesso ao Gestor
 
 // espelho da regra do back-end: coordenador pode tudo; senão, precisa do papel dono
 const PAPEL_DA_ETAPA = {
@@ -1388,7 +1418,7 @@ function podeNaEtapa(etapa){
   return (PAPEL_DA_ETAPA[etapa]||[]).includes(USUARIO.papel);
 }
 function rotuloEtapa(etapa){
-  return {triagem:'analista',validacao:'Adriano (comercial)',atribuicao:'Rodrigo (atribuidor)',
+  return {triagem:'analista',validacao:'Bruno (validação)',atribuicao:'Rodrigo (atribuidor)',
     definir_sugestoes:'coordenador',cotacao:'operacional',revisao:'coordenador'}[etapa]||'responsável';
 }
 
@@ -1485,24 +1515,18 @@ function mostrarApp(){
   if(btnU) btnU.style.display = (USUARIO.usuario==='allan') ? '' : 'none';
   const btnE=document.getElementById('btnEmail');
   if(btnE) btnE.style.display = (USUARIO.papel==='coordenador') ? '' : 'none';
-  const btnA=document.getElementById('btnArquivados');
-  if(btnA) btnA.style.display = (USUARIO.papel==='coordenador') ? '' : 'none';
   carregarKanban();
   // link do hub: /licitacoes/?licoes=1 abre direto as Lições
   try{ if(new URLSearchParams(location.search).get('licoes')==='1') abrirLicoes(); }catch(_){}
 }
 function mostrarId(){
+  // Sem sessão válida: não há mais login próprio do Gestor. Mostra o aviso e leva ao portal.
   document.getElementById('idView').style.display='grid';
   document.getElementById('app').style.display='none';
-  document.getElementById('inSenha').value='';
-  const s2=document.getElementById('inSenha2'); if(s2) s2.value='';
-  carregarUsuarios();
+  const m=document.getElementById('idMsgAcesso');
+  if(m) m.textContent = MSG_ACESSO || 'O acesso ao Gestor de Pregões é feito pelo portal da Safenet, com o seu login único.';
 }
 
-document.getElementById('btnTrocar').addEventListener('click', async()=>{
-  await fetch(AUTH+'/logout',{method:'POST',credentials:'same-origin'});
-  USUARIO=null; mostrarId();
-});
 
 // status finalizados (não contam como ativos)
 const STATUS_FINAL = ['ganho','perdido','nao_realizado'];
@@ -1862,36 +1886,101 @@ async function arquivarPregao(pid, orgao, numero){
 }
 
 const _escA = t => (''+(t==null?'':t)).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
-async function abrirArquivados(){
+// ---------- HISTÓRICO (pregões arquivados): consulta, busca, exportação e virada do fluxo ----------
+const HI = {pagina:1, timer:null, montado:false};
+const _rotStatus = k => ((COLS.find(c=>c[0]===k)||[])[1]) || k || '';
+const _fmtData = iso => { const m=/^(\d{4})-(\d{2})-(\d{2})/.exec(iso||''); return m ? `${m[3]}/${m[2]}/${m[1]}` : ''; };
+const _fmtValor = p => p.valor_sigiloso ? 'sigiloso' : (p.valor_estimado!=null ? 'R$ '+Number(p.valor_estimado).toLocaleString('pt-BR',{maximumFractionDigits:0}) : '');
+function _hiParams(extra){
+  const q=new URLSearchParams();
+  const v=id=>document.getElementById(id).value.trim();
+  if(v('hiQ')) q.set('q',v('hiQ'));
+  if(v('hiStatus')) q.set('status',v('hiStatus'));
+  if(v('hiAno')) q.set('ano',v('hiAno'));
+  Object.entries(extra||{}).forEach(([k,x])=>q.set(k,x));
+  return q.toString();
+}
+function _hiMontar(){
+  if(HI.montado) return; HI.montado=true;
+  const sel=document.getElementById('hiStatus');
+  COLS.forEach(c=>{ const o=document.createElement('option'); o.value=c[0]; o.textContent=c[1]; sel.appendChild(o); });
+  const recarrega=()=>{ HI.pagina=1; abrirArquivados(true); };
+  document.getElementById('hiQ').addEventListener('input',()=>{ clearTimeout(HI.timer); HI.timer=setTimeout(recarrega,350); });
+  sel.addEventListener('change',recarrega);
+  document.getElementById('hiAno').addEventListener('change',recarrega);
+  document.getElementById('hiExportar').addEventListener('click',()=>{ window.location.href = API+'/historico/exportar?'+_hiParams(); });
+  document.getElementById('hiArquivarTudo').addEventListener('click',arquivarTudo);
+}
+function _hiCartao(p, podeGerir){
+  const resultado = p.resultado ? `<span class="hi-tag">${_escA({ganho:'Ganho',perdido:'Perdido',nao_participado:'Não participado'}[p.resultado]||p.resultado)}</span>` : '';
+  const quando = [_fmtData(p.data_sessao), p.uasg?('UASG '+p.uasg):'', p.total_itens+' iten(s)', _fmtValor(p)].filter(Boolean).join(' · ');
+  return `<div class="arq-item">
+      <b>${_escA(p.orgao)}</b><small>PE ${_escA(p.numero)} · ${_escA(quando)}</small>
+      <div><span class="hi-tag">${_escA(_rotStatus(p.status))}</span>${resultado}</div>
+      ${p.objeto?`<div class="hi-obj">${_escA(p.objeto.length>220?p.objeto.slice(0,220)+'…':p.objeto)}</div>`:''}
+      ${p.modelos&&p.modelos.length?`<div class="hi-mod"><b>Modelos escolhidos:</b> ${_escA(p.modelos.join('; '))}</div>`:''}
+      ${p.resultado_motivo?`<div class="arq-motivo"><b>Motivo do resultado:</b> ${_escA(p.resultado_motivo)}</div>`:''}
+      <small>Arquivado por ${_escA(p.arquivado_por)} em ${_escA(p.arquivado_em)}${p.arquivado_motivo?(' — '+_escA(p.arquivado_motivo)):''}</small>
+      ${podeGerir?`<div class="arq-acoes">
+        <button class="btn-ghost" data-restaurar="${p.id}">↩ Restaurar ao quadro</button>
+        <button class="btn-danger" data-apagar="${p.id}" data-org="${_escA(p.orgao)}" data-num="${_escA(p.numero)}">Excluir de vez</button>
+      </div>`:''}</div>`;
+}
+async function abrirArquivados(mantemFiltros){
+  _hiMontar();
   document.getElementById('arqBg').classList.add('show');
+  const ehCoord = USUARIO && USUARIO.papel==='coordenador';
+  document.getElementById('hiAdmin').style.display = (USUARIO && USUARIO.usuario==='allan') ? '' : 'none';
+  if(mantemFiltros!==true){ HI.pagina=1; }
   const box=document.getElementById('arqLista');
   box.innerHTML='<div class="arq-vazio">Carregando…</div>';
   try{
-    const r=await api('/pregoes?arquivados=true');
-    const ps=(r&&r.pregoes)||[];
-    if(!ps.length){ box.innerHTML='<div class="arq-vazio">Nenhum card arquivado.</div>'; return; }
-    box.innerHTML=ps.map(p=>`<div class="arq-item">
-      <b>${_escA(p.orgao)}</b><small>PE ${_escA(p.numero)} · etapa: ${_escA(p.status)} · ${p.total_itens} itens</small>
-      <small>Arquivado por ${_escA(p.arquivado_por)} em ${_escA(p.arquivado_em)}</small>
-      <div class="arq-motivo">${_escA(p.arquivado_motivo)}</div>
-      <div class="arq-acoes">
-        <button class="btn-ghost" data-restaurar="${p.id}">↩ Restaurar</button>
-        <button class="btn-danger" data-apagar="${p.id}" data-org="${_escA(p.orgao)}" data-num="${_escA(p.numero)}">Excluir de vez</button>
-      </div></div>`).join('');
+    const r=await api('/historico?'+_hiParams({pagina:HI.pagina, por_pagina:30}));
+    // anos disponíveis (mantém a escolha atual)
+    const selAno=document.getElementById('hiAno'), atual=selAno.value;
+    selAno.innerHTML='<option value="">Todos os anos</option>'+(r.anos||[]).map(a=>`<option value="${_escA(a)}">${_escA(a)}</option>`).join('');
+    selAno.value=atual;
+    const ps=r.pregoes||[];
+    document.getElementById('hiTotal').textContent = r.total+' pregão(ões) no histórico'+((document.getElementById('hiQ').value||document.getElementById('hiStatus').value||atual)?' com os filtros atuais':'');
+    if(!ps.length){ box.innerHTML='<div class="arq-vazio">Nada encontrado.</div>'; document.getElementById('hiPag').innerHTML=''; return; }
+    box.innerHTML=ps.map(p=>_hiCartao(p, ehCoord)).join('');
     box.querySelectorAll('[data-restaurar]').forEach(b=>b.addEventListener('click',()=>restaurarPregao(+b.dataset.restaurar)));
     box.querySelectorAll('[data-apagar]').forEach(b=>b.addEventListener('click',async()=>{
-      await excluirPregao(+b.dataset.apagar, b.dataset.org, b.dataset.num); abrirArquivados();
+      await excluirPregao(+b.dataset.apagar, b.dataset.org, b.dataset.num); abrirArquivados(true);
     }));
+    const total=Math.max(1,Math.ceil(r.total/r.por_pagina));
+    document.getElementById('hiPag').innerHTML = total>1
+      ? `<button class="btn-ghost" id="hiAnt" ${r.pagina<=1?'disabled':''}>‹ Anterior</button><span>Página ${r.pagina} de ${total}</span><button class="btn-ghost" id="hiProx" ${r.pagina>=total?'disabled':''}>Próxima ›</button>` : '';
+    const ant=document.getElementById('hiAnt'), prox=document.getElementById('hiProx');
+    if(ant) ant.addEventListener('click',()=>{ HI.pagina--; abrirArquivados(true); });
+    if(prox) prox.addEventListener('click',()=>{ HI.pagina++; abrirArquivados(true); });
   }catch(e){ box.innerHTML='<div class="arq-vazio">Não foi possível carregar. '+_escA(e.message||'')+'</div>'; }
+}
+async function arquivarTudo(){
+  try{
+    const sim=await api('/admin/arquivar-todos',{method:'POST',body:JSON.stringify({confirmacao:'',simular:true})});
+    if(!sim || sim.total==null){ alert('Não foi possível conferir os cards do quadro. '+((sim&&sim.detail)||'')); return; }
+    if(sim.total===0){ alert('Não há cards ativos no quadro: nada a arquivar.'); return; }
+    const linhas=Object.entries(sim.por_status||{}).map(([k,n])=>'  • '+_rotStatus(k)+': '+n).join('\n');
+    if(!confirm('Vão para o histórico TODOS os '+sim.total+' cards do quadro:\n\n'+linhas+'\n\nNada é apagado e dá para restaurar um a um. Continuar?')) return;
+    const frase=prompt('Para confirmar, digite exatamente: ARQUIVAR TODOS','');
+    if(frase===null) return;
+    const r=await api('/admin/arquivar-todos',{method:'POST',body:JSON.stringify({confirmacao:frase.trim()})});
+    if(r && r.ok){
+      toast(r.total+' cards foram para o histórico.');
+      alert(r.total+' cards arquivados.\nCópia de segurança dos dados: '+r.backup);
+      carregarKanban(); abrirArquivados();
+    } else alert('Não foi possível arquivar. '+((r&&r.detail)||''));
+  }catch(e){ alert('Não foi possível arquivar. '+(e.message||'')); }
 }
 async function restaurarPregao(pid){
   try{
     const r=await api('/pregoes/'+pid+'/restaurar',{method:'POST',body:'{}'});
-    if(r && r.ok){ toast('Card restaurado.'); carregarKanban(); abrirArquivados(); }
+    if(r && r.ok){ toast('Card restaurado.'); carregarKanban(); abrirArquivados(true); }
     else alert('Não foi possível restaurar. '+((r&&r.detail)||''));
   }catch(e){ alert('Não foi possível restaurar. '+(e.message||'')); }
 }
-document.getElementById('btnArquivados').addEventListener('click', abrirArquivados);
+document.getElementById('btnArquivados').addEventListener('click', ()=>abrirArquivados());
 document.getElementById('arqFechar').addEventListener('click',()=>document.getElementById('arqBg').classList.remove('show'));
 
 async function excluirPregao(pid, orgao, numero){
@@ -2018,7 +2107,7 @@ async function carregarKanban(){
         + `<div class="pc-notas pc-docs" data-docs="${p.id}" title="Documentos do pregão">📎 ${p.n_documentos?('Documentos · '+p.n_documentos):'Documentos'}</div>`
         + respHTML + resHTML + excluirHTML
         + (triavel?`<div class="go-triar">▶ Fazer triagem</div>`:'')
-        + (validavel?`<div class="go-validar">▶ Validar (Adriano)</div>`:'')
+        + (validavel?`<div class="go-validar">▶ Validar (Bruno)</div>`:'')
         + (atribuivel?`<div class="go-atribuir">▶ Ver atribuição (Rodrigo)</div>`:'')
         + (sugerivel?`<div class="go-sugestoes">▶ Definir 3 sugestões</div>`:'')
         + (cotavel?`<div class="go-sugestoes">▶ Cotar (montar proposta)</div>`:'')
@@ -2137,6 +2226,7 @@ function coletarItens(){
   return itens;
 }
 function limparCadastro(){
+  { const pb=document.getElementById('cadParecidos'); if(pb){ pb.style.display='none'; pb.innerHTML=''; } }
   ['f_orgao','f_numero','f_data','f_objeto','f_uasg','f_valor'].forEach(id=>document.getElementById(id).value='');
   ['f_portal','f_criterio','f_modo'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('f_tipo').value='fornecimento';
@@ -2288,6 +2378,31 @@ document.getElementById('f_pdf').addEventListener('change', async (e)=>{
   }
   e.target.value=''; // permite re-selecionar o mesmo arquivo
 });
+
+// ---- Pregões parecidos (consulta ao histórico enquanto cadastra) ----
+let _parTimer=null;
+function agendarParecidos(){ clearTimeout(_parTimer); _parTimer=setTimeout(buscarParecidos,600); }
+async function buscarParecidos(){
+  const box=document.getElementById('cadParecidos'); if(!box) return;
+  const orgao=document.getElementById('f_orgao').value.trim();
+  const uasg=document.getElementById('f_uasg').value.trim();
+  const objeto=document.getElementById('f_objeto').value.trim();
+  let itens=''; try{ itens=(coletarItens()||[]).map(i=>i.descricao||'').filter(Boolean).slice(0,40).join('|'); }catch(_){}
+  if(orgao.length<4 && !uasg && objeto.length<8 && !itens){ box.style.display='none'; return; }
+  try{
+    const q=new URLSearchParams({orgao,uasg,objeto,itens,limite:'5'});
+    const r=await api('/historico/parecidos?'+q.toString());
+    const ps=(r&&r.parecidos)||[];
+    if(!ps.length){ box.style.display='none'; return; }
+    box.style.display='block';
+    box.innerHTML='<b>🔎 Pregões parecidos já tratados pela Safenet</b><small>Veja o que foi feito antes (modelo escolhido, resultado) antes de triar este edital.</small>'
+      + ps.map(p=>`<div class="cp-item"><b>${_escA(p.orgao)}</b> — PE ${_escA(p.numero)} ${p.data_sessao?('· '+_escA(_fmtData(p.data_sessao))):''}
+        <small>${_escA((p.motivos||[]).join(' · '))} · etapa final: ${_escA(_rotStatus(p.status))}${p.resultado?(' · resultado: '+_escA(p.resultado)):''}</small>
+        ${p.modelos&&p.modelos.length?`<small>Modelos: ${_escA(p.modelos.join('; '))}</small>`:''}
+        ${p.resultado_motivo?`<small>Motivo: ${_escA(p.resultado_motivo)}</small>`:''}</div>`).join('');
+  }catch(_){ box.style.display='none'; }
+}
+['f_orgao','f_uasg','f_objeto'].forEach(id=>{ const el=document.getElementById(id); if(el) el.addEventListener('input',agendarParecidos); });
 document.getElementById('btnCancelar').addEventListener('click',()=>{
   document.getElementById('modalBg').classList.remove('show'); limparCadastro();
 });
@@ -2621,7 +2736,7 @@ const tipoLabelAt=(t)=>({fornecimento:'Fornecimento',locacao:'Locação',servico
 async function abrirAtribuicao(pid){
   const p=await api('/pregoes/'+pid); AT_PREGAO=p;
   const r = p.atribuicao || regraAtribuicao(p);
-  document.getElementById('atResumo').innerHTML=`<div class="to">${p.orgao}<small>PE ${p.numero} · validado pelo Adriano</small></div>`;
+  document.getElementById('atResumo').innerHTML=`<div class="to">${p.orgao}<small>PE ${p.numero} · validado</small></div>`;
   document.getElementById('atTipo').textContent = tipoLabelAt(p.tipo);
   document.getElementById('atRef').textContent = p.tem_referencia?'Tem modelo de referência':'Sem modelo de referência';
   // fluxo de pessoas
@@ -3847,7 +3962,11 @@ document.getElementById('btnEmail').addEventListener('click', abrirEmail);
 
 // já estou logado? (sessão via cookie)
 (async function(){
-  try{ const r=await fetch(AUTH+'/eu',{credentials:'same-origin'}); if(r.ok){ const {user}=await r.json(); USUARIO=user; mostrarApp(); return; } }catch{}
+  try{
+    const r=await fetch(AUTH+'/eu',{credentials:'same-origin'});
+    if(r.ok){ const {user}=await r.json(); USUARIO=user; mostrarApp(); return; }
+    if(r.status!==401){ try{ const j=await r.json(); if(j && typeof j.detail==='string') MSG_ACESSO=j.detail; }catch{} }
+  }catch{}
   mostrarId();
 })();
 </script>

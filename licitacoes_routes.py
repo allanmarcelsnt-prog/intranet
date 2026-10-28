@@ -16,6 +16,7 @@ gravam o usuário AUTENTICADO (não um nome vindo do cliente), base da auditoria
 import io
 import json
 import os
+import shutil
 import smtplib
 import ssl
 import tempfile
@@ -31,7 +32,7 @@ from pathlib import Path
 from typing import Optional
 
 from fastapi import APIRouter, HTTPException, Depends, UploadFile, File, Form, BackgroundTasks
-from fastapi.responses import StreamingResponse, FileResponse
+from fastapi.responses import StreamingResponse, FileResponse, Response
 from pydantic import BaseModel
 
 from auth_routes import usuario_logado
@@ -253,8 +254,29 @@ def _emails_por_papel(papeis):
     return [u["email"] for u in auth_store.listar_emails()
             if u.get("papel") in papeis and u.get("email")]
 
+# Validador principal da etapa de validação. Desde 28/10/2026 é o Bruno; Allan
+# (coordenador) e Adriano (comercial) ficam de reserva — as permissões da etapa
+# não mudam (PAPEL_DA_ETAPA["validacao"] + coordenador), só quem é AVISADO.
+# O login pode ser trocado sem alterar código: GESTOR_VALIDADOR_USUARIO.
+VALIDADOR_USUARIO = os.environ.get("GESTOR_VALIDADOR_USUARIO", "bruno")
+VALIDADOR_NOME = "Bruno"
+
+def _emails_validador():
+    return [u["email"] for u in auth_store.listar_emails()
+            if u.get("usuario") == VALIDADOR_USUARIO and u.get("email")]
+
+def _emails_da_etapa(etapa):
+    """Quem avisar quando o pregão cai numa etapa. Na validação é o validador
+    principal (Bruno); se ele estiver sem e-mail cadastrado, cai no comportamento
+    antigo (papel dono da etapa) para ninguém ficar sem aviso."""
+    if etapa == "validacao":
+        achou = _emails_validador()
+        if achou:
+            return achou
+    return _emails_por_papel(PAPEL_DA_ETAPA.get(etapa, set()))
+
 STATUS_ROTULO = {
-    "triagem": "Triagem", "aguardando_adriano": "Aguardando Adriano",
+    "triagem": "Triagem", "aguardando_adriano": "Aguardando Bruno",
     "aguardando_rodrigo": "Triado · aguardando Rodrigo", "definir_sugestoes": "Definir sugestões",
     "em_cotacao": "Em cotação", "em_revisao": "Em revisão", "pronto_effecti": "Pronto p/ Effecti",
     "em_disputa": "Em disputa", "ganho": "Ganho", "perdido": "Perdido", "nao_realizado": "Não realizado",
@@ -268,7 +290,7 @@ STATUS_ROTULO = {
 # daquela situação. Idempotente: 'licitacoes_sla_log.json' guarda o que já
 # foi avisado HOJE, pra não duplicar se o processo reiniciar no meio do dia.
 # ---------------------------------------------------------------------------
-SLA_VALIDACAO_DIAS = 3   # parado em "Aguardando Adriano"
+SLA_VALIDACAO_DIAS = 3   # parado em "Aguardando Bruno" (chave interna: aguardando_adriano)
 SLA_DEVOLUCAO_DIAS = 1   # devolvido e ainda não corrigido
 
 def _dias_desde(data_str):
@@ -316,12 +338,12 @@ def _rodar_scan_sla():
         pid = p.get("id")
         status = p.get("status")
 
-        # --- SLA 1: parado em "Aguardando Adriano" há dias demais ---
+        # --- SLA 1: parado em "Aguardando Bruno" (validação) há dias demais ---
         if status == "aguardando_adriano" and not _ja_avisado_hoje(pid, "validacao_parada"):
             entrada = _entrada_aberta_etapa(pid, "validacao")
             dias = _dias_desde(entrada["inicio"]) if entrada else None
             if dias is not None and dias >= SLA_VALIDACAO_DIAS:
-                destinatarios = _emails_coordenadores()
+                destinatarios = sorted(set(_emails_validador()) | set(_emails_coordenadores()))
                 if destinatarios:
                     enviar_email(
                         destinatarios=destinatarios,
@@ -329,7 +351,7 @@ def _rodar_scan_sla():
                         titulo="Pregão parado esperando validação",
                         corpo_html=(
                             f"<p><b>{p.get('orgao')}</b><br>PE {p.get('numero')}</p>"
-                            f"<p>Está em <b>Aguardando Adriano</b> há <b>{dias} dia(s)</b> sem avançar.</p>"
+                            f"<p>Está em <b>Aguardando Bruno</b> há <b>{dias} dia(s)</b> sem avançar.</p>"
                         ),
                         evento="sla_validacao_parada",
                         cta_texto="Abrir o Gestor de Pregões", cta_url=INTRANET_BASE_URL,
@@ -344,7 +366,7 @@ def _rodar_scan_sla():
                 para_status = dev.get("para_status")
                 destinatarios = _emails_do_responsavel(p) if para_status == "em_cotacao" else []
                 if not destinatarios:
-                    destinatarios = _emails_por_papel(PAPEL_DA_ETAPA.get(ETAPA_DE.get(para_status), set()))
+                    destinatarios = _emails_da_etapa(ETAPA_DE.get(para_status))
                 destinatarios = sorted(set(destinatarios) | set(_emails_coordenadores()))
                 if destinatarios:
                     motivo_html = (dev.get("motivo") or "").replace("<", "&lt;")
@@ -624,14 +646,14 @@ class TriagemIn(BaseModel):
 
 
 class ItemValidacao(BaseModel):
-    """Decisão do Adriano sobre um item do pregão."""
+    """Decisão do validador (Bruno; Adriano e Allan de reserva) sobre um item do pregão."""
     id: int                          # id do item dentro do pregão
     validado: str                    # "aprovado" | "reprovado"
     motivo_reprova: Optional[str] = None    # obrigatório quando reprovado
     incluir: bool = False            # Adriano puxa de volta um item que o Thiago deixou de fora
 
 class ValidacaoIn(BaseModel):
-    """Conjunto de decisões do Adriano ao liberar o pregão para atribuição."""
+    """Conjunto de decisões do validador ao liberar o pregão para atribuição."""
     itens: list[ItemValidacao] = []
 
 
@@ -775,6 +797,155 @@ def listar_pregoes(arquivados: bool = False, user=Depends(usuario_logado)):
          "arquivado_motivo": p.get("arquivado_motivo")}
         for p in pregoes
     ]}
+
+
+# ---------------------------------------------------------------------------
+# HISTÓRICO — consulta dos pregões arquivados (e dos ativos, para "parecidos").
+#   GET /historico            busca + filtros + paginação
+#   GET /historico/exportar   mesma busca, em planilha .xlsx
+#   GET /historico/parecidos  sugestões para um cadastro novo (órgão/UASG/objeto/itens)
+# Qualquer usuário logado consulta (é base de conhecimento, não ação).
+# ---------------------------------------------------------------------------
+def _norm_h(t):
+    import unicodedata
+    t = unicodedata.normalize("NFKD", str(t or "")).encode("ascii", "ignore").decode().lower()
+    return " ".join(t.split())
+
+def _modelos_do_pregao(p, limite=6):
+    """Modelos efetivamente escolhidos na cotação (fabricante + modelo)."""
+    out = []
+    for it in p.get("itens", []):
+        esc_id = it.get("sugestao_escolhida_id")
+        for s_ in it.get("sugestoes", []):
+            if esc_id is not None and s_.get("id") == esc_id:
+                nome = f'{(s_.get("fabricante") or "").strip()} {(s_.get("modelo") or "").strip()}'.strip()
+                if nome and nome not in out:
+                    out.append(nome)
+    return out[:limite]
+
+def _linha_historico(p, com_itens=False):
+    r = {
+        "id": p["id"], "orgao": p.get("orgao"), "numero": p.get("numero"), "uasg": p.get("uasg"),
+        "objeto": p.get("objeto"), "tipo": p.get("tipo"), "status": p.get("status"),
+        "resultado": p.get("resultado"), "resultado_motivo": p.get("resultado_motivo"),
+        "data_sessao": p.get("data_sessao"),
+        "valor_estimado": p.get("valor_estimado"), "valor_sigiloso": bool(p.get("valor_sigiloso")),
+        "total_itens": len(p.get("itens", [])),
+        "modelos": _modelos_do_pregao(p),
+        "arquivado": bool(p.get("arquivado")),
+        "arquivado_em": p.get("arquivado_em"), "arquivado_por": p.get("arquivado_por"),
+        "arquivado_motivo": p.get("arquivado_motivo"),
+    }
+    if com_itens:
+        r["itens"] = [{"numero_item": i.get("numero_item"), "descricao": i.get("descricao"),
+                       "quantidade": i.get("quantidade")} for i in p.get("itens", [])]
+    return r
+
+def _texto_busca(p):
+    partes = [p.get("orgao"), p.get("numero"), p.get("uasg"), p.get("objeto"), p.get("portal")]
+    partes += [i.get("descricao") for i in p.get("itens", [])]
+    partes += _modelos_do_pregao(p, 50)
+    return _norm_h(" ".join(str(x or "") for x in partes))
+
+def _filtrar_historico(q, status, ano, so_arquivados=True):
+    pregoes = _ler(PREGOES_PATH, PREGOES_VAZIO)
+    if so_arquivados:
+        pregoes = [p for p in pregoes if p.get("arquivado")]
+    termos = [t for t in _norm_h(q).split() if t]
+    out = []
+    for p in pregoes:
+        if status and p.get("status") != status:
+            continue
+        if ano and not str(p.get("data_sessao") or "").startswith(str(ano)):
+            continue
+        if termos:
+            texto = _texto_busca(p)
+            if not all(t in texto for t in termos):
+                continue
+        out.append(p)
+    out.sort(key=lambda x: (x.get("data_sessao") or ""), reverse=True)
+    return out
+
+@router.get("/historico")
+def listar_historico(q: str = "", status: str = "", ano: str = "",
+                     pagina: int = 1, por_pagina: int = 30, user=Depends(usuario_logado)):
+    pagina = max(1, pagina)
+    por_pagina = min(max(1, por_pagina), 100)
+    achados = _filtrar_historico(q, status, ano)
+    ini = (pagina - 1) * por_pagina
+    todos = _ler(PREGOES_PATH, PREGOES_VAZIO)
+    anos = sorted({str(p.get("data_sessao") or "")[:4] for p in todos
+                   if p.get("arquivado") and p.get("data_sessao")}, reverse=True)
+    return {"total": len(achados), "pagina": pagina, "por_pagina": por_pagina,
+            "anos": anos,
+            "pregoes": [_linha_historico(p) for p in achados[ini:ini + por_pagina]]}
+
+@router.get("/historico/exportar")
+def exportar_historico(q: str = "", status: str = "", ano: str = "", user=Depends(usuario_logado)):
+    from openpyxl import Workbook
+    from openpyxl.styles import Font, PatternFill
+    achados = _filtrar_historico(q, status, ano)
+    wb = Workbook()
+    ws = wb.active
+    ws.title = "Histórico"
+    cab = ["Órgão", "Pregão", "UASG", "Objeto", "Tipo", "Etapa final", "Resultado", "Motivo do resultado",
+           "Sessão", "Valor estimado", "Itens", "Modelos escolhidos", "Arquivado em", "Motivo do arquivamento"]
+    ws.append(cab)
+    for c in ws[1]:
+        c.font = Font(bold=True, color="FFFFFF")
+        c.fill = PatternFill("solid", fgColor="164023")
+    for p in achados:
+        l = _linha_historico(p)
+        ws.append([l["orgao"], l["numero"], l["uasg"], l["objeto"], l["tipo"],
+                   STATUS_ROTULO.get(l["status"], l["status"]), l["resultado"], l["resultado_motivo"],
+                   l["data_sessao"], "SIGILOSO" if l["valor_sigiloso"] else l["valor_estimado"],
+                   l["total_itens"], "; ".join(l["modelos"]), l["arquivado_em"], l["arquivado_motivo"]])
+    for col, larg in zip("ABCDEFGHIJKLMN", [38, 14, 10, 40, 12, 18, 12, 30, 18, 16, 8, 36, 19, 34]):
+        ws.column_dimensions[col].width = larg
+    ws.freeze_panes = "A2"
+    buf = io.BytesIO()
+    wb.save(buf)
+    nome = f"historico-pregoes-{datetime.now().strftime('%Y%m%d')}.xlsx"
+    return Response(content=buf.getvalue(),
+                    media_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+                    headers={"Content-Disposition": f'attachment; filename="{nome}"'})
+
+@router.get("/historico/parecidos")
+def historico_parecidos(orgao: str = "", uasg: str = "", objeto: str = "", itens: str = "",
+                        excluir_id: int = 0, limite: int = 5, user=Depends(usuario_logado)):
+    """Pregões anteriores (arquivados ou não) parecidos com o que está sendo
+    cadastrado. Pontuação simples e explicável: mesma UASG (5), mesmo órgão (4),
+    palavras do objeto em comum (até 4) e das descrições dos itens (até 8; exige
+    2+ palavras em comum). Só entra quem soma 3 pontos ou mais.
+    'itens' vem como descrições separadas por '|'."""
+    def _palavras(t):
+        return {w for w in _norm_h(t).split() if len(w) >= 4}
+    w_obj = _palavras(objeto)
+    w_itens = _palavras(itens.replace("|", " "))
+    org = _norm_h(orgao)
+    pontuados = []
+    for p in _ler(PREGOES_PATH, PREGOES_VAZIO):
+        if p["id"] == excluir_id:
+            continue
+        pts, motivos = 0, []
+        if uasg and str(p.get("uasg") or "").strip() == uasg.strip():
+            pts += 5; motivos.append("mesma UASG")
+        if org and _norm_h(p.get("orgao")) == org:
+            pts += 4; motivos.append("mesmo órgão")
+        if w_obj:
+            comum = w_obj & _palavras(p.get("objeto"))
+            if comum:
+                pts += min(len(comum), 4); motivos.append("objeto parecido")
+        if w_itens:
+            w_p = _palavras(" ".join(i.get("descricao") or "" for i in p.get("itens", [])))
+            comum = w_itens & w_p
+            if len(comum) >= 2:
+                pts += min(len(comum), 8); motivos.append("itens parecidos")
+        if pts >= 3:
+            pontuados.append((pts, p, motivos))
+    pontuados.sort(key=lambda x: (x[0], x[1].get("data_sessao") or ""), reverse=True)
+    return {"parecidos": [dict(_linha_historico(p), pontos=pts, motivos=m)
+                          for pts, p, m in pontuados[:min(max(limite, 1), 10)]]}
 
 
 @router.get("/pregoes/{pid}")
@@ -1034,7 +1205,7 @@ def devolver_etapa(pid: int, dados: DevolverIn, background_tasks: BackgroundTask
     # papel da etapa de destino (ninguém tem "dono" individual ali).
     destinatarios = _emails_do_responsavel(p) if anterior == "em_cotacao" else []
     if not destinatarios:
-        destinatarios = _emails_por_papel(PAPEL_DA_ETAPA.get(ETAPA_DE.get(anterior), set()))
+        destinatarios = _emails_da_etapa(ETAPA_DE.get(anterior))
     if destinatarios:
         motivo_html = dados.motivo.strip().replace("<", "&lt;")
         background_tasks.add_task(
@@ -1164,6 +1335,56 @@ def arquivar_pregao(pid: int, dados: ArquivarIn, user=Depends(usuario_logado)):
         _escrever_atomico(pregoes, PREGOES_PATH)
     log_acao(pid, quem, "arquivou", {"motivo": motivo, "status": p.get("status")})
     return {"ok": True, "arquivado": True}
+
+
+# ---------------------------------------------------------------------------
+# VIRADA PARA O HISTÓRICO (28/10/2026) — pedido do Adriano: tirar TODOS os cards
+# atuais do fluxo, sem apagar nada, para virarem histórico de consulta nas
+# próximas licitações. Só o administrador (Allan). Diferente do arquivamento
+# individual, vale também para em_disputa/ganho/perdido. Antes de mexer, grava
+# uma cópia do JSON ao lado (licitacoes_pregoes.pre-historico-AAAAMMDD-HHMMSS.json).
+# Reversível: cada card volta pelo "Restaurar" da tela Histórico.
+# ---------------------------------------------------------------------------
+CONFIRMA_ARQUIVAR_TUDO = "ARQUIVAR TODOS"
+
+class ArquivarTudoIn(BaseModel):
+    motivo: Optional[str] = None
+    confirmacao: str
+    simular: bool = False          # True = só conta, não altera nada
+
+@router.post("/admin/arquivar-todos")
+def arquivar_todos(dados: ArquivarTudoIn, user=Depends(usuario_logado)):
+    if user.get("usuario") != os.environ.get("INTRANET_ADMIN_LOGIN", "allan"):
+        raise HTTPException(status_code=403, detail="Apenas o administrador pode arquivar todos os cards.")
+    quem = user["nome"]
+    motivo = (dados.motivo or "").strip() or "Virada do fluxo — histórico (28/10/2026)"
+    if not dados.simular and (dados.confirmacao or "").strip() != CONFIRMA_ARQUIVAR_TUDO:
+        raise HTTPException(status_code=400,
+            detail=f'Para confirmar, envie exatamente "{CONFIRMA_ARQUIVAR_TUDO}".')
+    por_status = {}
+    ids = []
+    with _lock:
+        pregoes = _ler(PREGOES_PATH, PREGOES_VAZIO)
+        alvo = [p for p in pregoes if not p.get("arquivado")]
+        for p in alvo:
+            por_status[p.get("status")] = por_status.get(p.get("status"), 0) + 1
+        if dados.simular:
+            return {"ok": True, "simulacao": True, "total": len(alvo), "por_status": por_status}
+        stamp = datetime.now().strftime("%Y%m%d-%H%M%S")
+        backup = PREGOES_PATH.with_name(f"licitacoes_pregoes.pre-historico-{stamp}.json")
+        shutil.copy2(PREGOES_PATH, backup)
+        agora = AGORA()
+        for p in alvo:
+            p["arquivado"] = True
+            p["arquivado_em"] = agora
+            p["arquivado_por"] = quem
+            p["arquivado_motivo"] = motivo
+            p["atualizado_em"] = agora
+            ids.append((p["id"], p.get("status")))
+        _escrever_atomico(pregoes, PREGOES_PATH)
+    for pid, st in ids:
+        log_acao(pid, quem, "arquivou", {"motivo": motivo, "status": st, "lote": True})
+    return {"ok": True, "total": len(ids), "por_status": por_status, "backup": backup.name}
 
 
 @router.post("/pregoes/{pid}/restaurar")
@@ -1469,7 +1690,7 @@ def salvar_triagem(pid: int, dados: TriagemIn, user=Depends(usuario_logado)):
 @router.post("/pregoes/{pid}/validacao")
 def salvar_validacao(pid: int, dados: ValidacaoIn, user=Depends(usuario_logado)):
     """
-    Validação técnica do Adriano. Regras:
+    Validação técnica (Bruno; Adriano e Allan de reserva). Regras:
       - Todo item marcado 'fornecemos' precisa ser decidido (aprovado, ou
         reprovado COM motivo). Reprovado com motivo conta como decidido.
       - O Adriano pode 'incluir' itens que o Thiago deixou de fora.
@@ -2884,7 +3105,7 @@ def mudar_status(pid: int, dados: MudarStatus, user=Depends(usuario_logado)):
 ORDEM_ETAPAS = ["triagem", "validacao", "atribuicao", "definir_sugestoes",
                 "cotacao", "revisao", "pronto", "disputa"]
 ROTULO_ETAPA = {
-    "triagem": "Triagem", "validacao": "Validação (Adriano)",
+    "triagem": "Triagem", "validacao": "Validação (Bruno)",
     "atribuicao": "Atribuição (Rodrigo)", "definir_sugestoes": "Definir sugestões",
     "cotacao": "Cotação", "revisao": "Revisão", "pronto": "Pronto p/ Effecti",
     "disputa": "Em disputa",
